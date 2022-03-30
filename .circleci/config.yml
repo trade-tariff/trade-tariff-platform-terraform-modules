@@ -1,21 +1,29 @@
-version: '2.1'
+version: 2.1
 orbs:
   terraform: 'circleci/terraform@3.0.0'
 
-executors:
-  default:
-    resource_class: small
+defaults: &defaults
     docker:
       - image: hashicorp/terraform:1.1.7
+    working_directory: ~/terraform
+    environment:
+      TF_IN_AUTOMATION: "true"
 
 jobs:
   fmt_validate_terraform:
-    executor: default
+    <<: *defaults
     steps:
       - checkout
-      - terraform/init
-      - terraform/fmt
-      - terraform/validate
+      - run: 
+          command: >-
+            for d in */ ; do (cd "$d" && terraform init -input=false -no-color -backend=false); done
+          name: terraform init
+      - terraform/fmt:
+          recursive: true
+      - run: 
+          command: >-
+            for d in */ ; do (cd "$d" && terraform validate -no-color); done
+          name: terraform validate
 
 workflows:
   terraform:
