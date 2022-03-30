@@ -18,3 +18,10 @@ repos:
           - --args=--disable-rule=aws_route53_record_invalid_type
           - --args=--disable-rule=aws_route53_record_invalid_zone_id
       - id: terraform_providers_lock
+  - repo: local
+    hooks:
+      - id: circleci-config-validate
+        name: Validate CircleCI Config
+        entry: .circleci/validate
+        language: script
+        files: .circleci/config.yml

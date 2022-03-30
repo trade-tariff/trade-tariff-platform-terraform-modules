@@ -1,0 +1,23 @@
+version: '2.1'
+orbs:
+  terraform: 'circleci/terraform@3.0.0'
+
+executors:
+  default:
+    resource_class: small
+    docker:
+      - image: hashicorp/terraform:1.1.7
+
+jobs:
+  fmt_validate_terraform:
+    executor: default
+    steps:
+      - checkout
+      - terraform/init
+      - terraform/fmt
+      - terraform/validate
+
+workflows:
+  terraform:
+    jobs:
+      - fmt_validate_terraform
