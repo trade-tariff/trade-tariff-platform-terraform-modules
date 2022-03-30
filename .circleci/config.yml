@@ -1,10 +1,8 @@
 version: 2.1
-orbs:
-  terraform: 'circleci/terraform@3.0.0'
-
 defaults: &defaults
     docker:
       - image: hashicorp/terraform:1.1.7
+    resource_class: small
     working_directory: ~/terraform
     environment:
       TF_IN_AUTOMATION: "true"
@@ -18,8 +16,10 @@ jobs:
           command: >-
             for d in */ ; do (cd "$d" && terraform init -input=false -no-color -backend=false); done
           name: terraform init
-      - terraform/fmt:
-          recursive: true
+      - run:
+          command: >-
+            for d in */ ; do (cd "$d" && terraform fmt -no-color -check -diff -recursive=true); done
+          name: terraform fmt
       - run: 
           command: >-
             for d in */ ; do (cd "$d" && terraform validate -no-color); done
