@@ -7,10 +7,10 @@ let
 in
 mkShell {
   buildInputs = [
-    tf
+    pre-commit
     terraform-docs
     terraform-ls
-    pre-commit
+    tf
     tflint
   ];
 }
