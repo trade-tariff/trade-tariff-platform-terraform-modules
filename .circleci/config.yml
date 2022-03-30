@@ -1,0 +1,31 @@
+version: 2.1
+defaults: &defaults
+    docker:
+      - image: hashicorp/terraform:1.1.7
+    resource_class: small
+    working_directory: ~/terraform
+    environment:
+      TF_IN_AUTOMATION: "true"
+
+jobs:
+  fmt_validate_terraform:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: 
+          command: >-
+            for d in */ ; do (cd "$d" && terraform init -input=false -no-color -backend=false); done
+          name: terraform init
+      - run:
+          command: >-
+            for d in */ ; do (cd "$d" && terraform fmt -no-color -check -diff -recursive=true); done
+          name: terraform fmt
+      - run: 
+          command: >-
+            for d in */ ; do (cd "$d" && terraform validate -no-color); done
+          name: terraform validate
+
+workflows:
+  terraform:
+    jobs:
+      - fmt_validate_terraform
