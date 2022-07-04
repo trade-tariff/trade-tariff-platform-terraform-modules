@@ -22,7 +22,18 @@ resource "github_repository" "repo" {
       owner      = lookup(template.value, "owner", "")
       repository = lookup(template.value, "repository", "")
     }
+  }
 
+  dynamic "pages" {
+    for_each = var.pages != null ? [true] : []
+
+    content {
+      source {
+        branch = var.pages.branch
+        path   = try(var.pages.path, "/")
+      }
+      cname = try(var.pages.cname, null)
+    }
   }
 
   lifecycle {

@@ -118,3 +118,14 @@ variable "vulnerability_alerts" {
   description = "GitHub vulnerability alerts"
   default     = false
 }
+
+variable "pages" {
+  description = "(Optional) The repository's GitHub Pages configuration. (Default: {})"
+  # type = object({
+  # branch = string
+  # path   = string
+  # cname  = string
+  # })
+  type    = any
+  default = null
+}

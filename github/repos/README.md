@@ -49,6 +49,7 @@ No modules.
 | <a name="input_is_template"></a> [is\_template](#input\_is\_template) | Set to true to tell GitHub that this is a template repository. | `bool` | `null` | no |
 | <a name="input_maintain_teams"></a> [maintain\_teams](#input\_maintain\_teams) | n/a | `list` | `[]` | no |
 | <a name="input_name"></a> [name](#input\_name) | n/a | `string` | n/a | yes |
+| <a name="input_pages"></a> [pages](#input\_pages) | (Optional) The repository's GitHub Pages configuration. (Default: {}) | `any` | `null` | no |
 | <a name="input_push_teams"></a> [push\_teams](#input\_push\_teams) | n/a | `list` | `[]` | no |
 | <a name="input_read_teams"></a> [read\_teams](#input\_read\_teams) | n/a | `list` | `[]` | no |
 | <a name="input_require_code_owner_reviews"></a> [require\_code\_owner\_reviews](#input\_require\_code\_owner\_reviews) | n/a | `bool` | `false` | no |
