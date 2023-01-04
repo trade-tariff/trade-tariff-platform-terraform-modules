@@ -9,6 +9,7 @@ resource "github_repository" "repo" {
 
   has_wiki               = var.has_wiki
   has_issues             = var.has_issues
+  has_projects           = var.has_projects
   has_downloads          = var.has_downloads
   allow_rebase_merge     = var.allow_rebase_merge
   allow_squash_merge     = var.allow_squash_merge
