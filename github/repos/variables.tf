@@ -44,7 +44,7 @@ variable "default_branch_name" {
 }
 
 variable "strict_status_check" {
-  default     = false
+  default     = true
   description = "Whether to require branches to be up-to-date before merging."
 }
 
@@ -75,24 +75,29 @@ variable "require_code_owner_reviews" {
   default = false
 }
 
+variable "has_projects" {
+  type    = bool
+  default = false
+}
+
 variable "has_issues" {
   type    = bool
-  default = true
+  default = false
 }
 
 variable "allow_rebase_merge" {
   type    = bool
-  default = true
+  default = false
 }
 
 variable "allow_squash_merge" {
   type    = bool
-  default = true
+  default = false
 }
 
 variable "has_downloads" {
   type    = bool
-  default = false
+  default = true
 }
 
 variable "delete_branch_on_merge" {
