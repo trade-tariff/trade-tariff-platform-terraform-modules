@@ -95,21 +95,6 @@ resource "aws_cloudfront_distribution" "this" {
       cache_policy_id          = i.value["cache_policy_id"]
       origin_request_policy_id = i.value["origin_request_policy_id"]
 
-      dynamic "forwarded_values" {
-        for_each = lookup(i.value, "use_forwarded_values", true) ? [true] : []
-
-        content {
-          query_string            = lookup(i.value, "query_string", false)
-          query_string_cache_keys = lookup(i.value, "query_string_cache_keys", [])
-          headers                 = lookup(i.value, "headers", [])
-
-          cookies {
-            forward           = lookup(i.value, "cookies_forward", "none")
-            whitelisted_names = lookup(i.value, "cookies_whitelisted_names", null)
-          }
-        }
-      }
-
       dynamic "lambda_function_association" {
         for_each = lookup(i.value, "lambda_function_association", [])
         iterator = l
