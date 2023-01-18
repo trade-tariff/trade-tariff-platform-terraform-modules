@@ -95,21 +95,6 @@ resource "aws_cloudfront_distribution" "this" {
       cache_policy_id          = i.value["cache_policy_id"]
       origin_request_policy_id = i.value["origin_request_policy_id"]
 
-      dynamic "forwarded_values" {
-        for_each = lookup(i.value, "use_forwarded_values", true) ? [true] : []
-
-        content {
-          query_string            = lookup(i.value, "query_string", false)
-          query_string_cache_keys = lookup(i.value, "query_string_cache_keys", [])
-          headers                 = lookup(i.value, "headers", [])
-
-          cookies {
-            forward           = lookup(i.value, "cookies_forward", "none")
-            whitelisted_names = lookup(i.value, "cookies_whitelisted_names", null)
-          }
-        }
-      }
-
       dynamic "lambda_function_association" {
         for_each = lookup(i.value, "lambda_function_association", [])
         iterator = l
@@ -153,7 +138,7 @@ resource "aws_cloudfront_distribution" "this" {
     cloudfront_default_certificate = lookup(var.viewer_certificate, "cloudfront_default_certificate", null)
     iam_certificate_id             = lookup(var.viewer_certificate, "iam_certificate_id", null)
 
-    minimum_protocol_version = lookup(var.viewer_certificate, "minimum_protocol_version", "TLSv1")
+    minimum_protocol_version = lookup(var.viewer_certificate, "minimum_protocol_version", "TLSv1.2_2021")
     ssl_support_method       = lookup(var.viewer_certificate, "ssl_support_method", null)
   }
 
