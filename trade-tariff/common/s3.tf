@@ -13,11 +13,32 @@ locals {
 }
 
 data "aws_caller_identity" "current" {}
+data "aws_kms_key" "s3_kms_encryption_key" {
+  key_id = "alias/aws/s3"
+}
 
 resource "aws_s3_bucket" "reporting" {
   bucket = "${var.project-key}-reporting"
   acl    = "private"
 
+  tags = {
+    Project = var.project-key
+  }
+}
+
+resource "aws_s3_bucket" "terragrunt-state" {
+  bucket = "${var.project-key}-terragrunt-state"
+  acl    = "private"
+
+  server_side_encryption_configuration {
+    rule {
+      bucket_key_enabled = false
+      apply_server_side_encryption_by_default {
+        kms_master_key_id = data.aws_kms_key.s3_kms_encryption_key.id
+        sse_algorithm     = "aws:kms"
+      }
+    }
+  }
   tags = {
     Project = var.project-key
   }
@@ -122,6 +143,12 @@ resource "aws_iam_policy" "persistence" {
   policy      = data.aws_iam_policy_document.s3-persistence-policy.json
 }
 
+resource "aws_iam_policy" "terragrunt-state" {
+  name        = "terragrunt-state-read-write"
+  description = "Provides read and write access to the global terragrunt-state bucket. This is where all of our terraform state files live."
+  policy      = data.aws_iam_policy_document.s3-terragrunt-state-policy.json
+}
+
 resource "aws_iam_policy" "reporting" {
   name        = "reporting-read-write"
   description = "Provides read and write access to the generic reporting bucket."
@@ -140,7 +167,6 @@ resource "aws_iam_policy" "database-backups-read-write" {
   policy      = data.aws_iam_policy_document.s3-database-backups-read-write-policy.json
 }
 
-
 resource "aws_iam_policy" "opensearch-package" {
   name        = "opensearch-package-read-write"
   description = "Provides read and write access to manage opensearch synonym packages"
@@ -151,6 +177,52 @@ resource "aws_iam_policy" "search-configuration" {
   name        = "search-configuration-read-write"
   description = "Provides read and write access to manage search configuration fixtures - especially those used for search query parsing/spelling corrections, etc."
   policy      = data.aws_iam_policy_document.s3-search-configuration-policy.json
+}
+
+data "aws_iam_policy_document" "s3-terragrunt-state-policy" {
+  statement {
+    actions = [
+      "s3:GetBucketLocation",
+      "s3:ListBucket",
+      "s3:ListBucketMultipartUploads",
+      "s3:ListBucketVersions",
+    ]
+    resources = [
+      "arn:aws:s3:::trade-tariff-terragrunt-state",
+      "arn:aws:s3:::trade-tariff-terragrunt-state/*",
+    ]
+  }
+
+  statement {
+    actions = [
+      "s3:AbortUpload",
+      "s3:DeleteObject",
+      "s3:DeleteObjectTagging",
+      "s3:DeleteObjectVersion",
+      "s3:DeleteObjectVersionTagging",
+      "s3:GetObject",
+      "s3:GetObjectAcl",
+      "s3:GetObjectTagging",
+      "s3:GetObjectTorrent",
+      "s3:GetObjectVersion",
+      "s3:GetObjectVersionAcl",
+      "s3:GetObjectVersionTagging",
+      "s3:GetObjectVersionTorrent",
+      "s3:ListUploadParts",
+      "s3:ListObjectsV2",
+      "s3:PutObject",
+      "s3:PutObjectAcl",
+      "s3:PutObjectTagging",
+      "s3:PutObjectVersionAcl",
+      "s3:PutObjectVersionTagging",
+      "s3:RestoreObject",
+    ]
+
+    resources = [
+      "arn:aws:s3:::trade-tariff-terragrunt-state",
+      "arn:aws:s3:::trade-tariff-terragrunt-state/*",
+    ]
+  }
 }
 
 data "aws_iam_policy_document" "s3-reporting-policy" {
@@ -432,3 +504,7 @@ resource "aws_iam_user_policy_attachment" "dit-database-backups-account-s3-attac
   policy_arn = aws_iam_policy.database-backups-read.arn
 }
 
+resource "aws_iam_user_policy_attachment" "trade-tariff-bot-terragrunt-state-s3-attachment" {
+  user       = aws_iam_user.trade-tariff-bot-account.name
+  policy_arn = aws_iam_policy.terragrunt-state.arn
+}

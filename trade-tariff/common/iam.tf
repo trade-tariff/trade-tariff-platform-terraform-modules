@@ -16,6 +16,15 @@ resource "aws_iam_user" "ci-account" {
   path = "/system/"
 }
 
+resource "aws_iam_access_key" "trade-tariff-bot-account" {
+  user = aws_iam_user.trade-tariff-bot-account.name
+}
+
+resource "aws_iam_user" "trade-tariff-bot-account" {
+  name = "trade-tariff-bot"
+  path = "/system/"
+}
+
 resource "aws_iam_access_key" "dit-database-backups-account" {
   user = aws_iam_user.dit-database-backups-account.name
 }
