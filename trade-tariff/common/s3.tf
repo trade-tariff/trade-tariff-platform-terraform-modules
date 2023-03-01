@@ -4,6 +4,7 @@ locals {
     "search-configuration",
     "opensearch-package",
     "database-backups",
+    "persistence",
   ]
   service-account-s3-policies = [
     "persistence",
