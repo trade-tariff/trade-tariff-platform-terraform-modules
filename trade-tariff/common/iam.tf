@@ -122,6 +122,7 @@ data "aws_iam_policy_document" "es" {
     actions = [
       "es:DescribePackages",
       "es:UpdatePackage",
+      "es:ListPackagesForDomain",
     ]
 
     resources = ["*"]
