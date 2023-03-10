@@ -92,7 +92,7 @@ variable "allow_rebase_merge" {
 
 variable "allow_squash_merge" {
   type    = bool
-  default = false
+  default = true
 }
 
 variable "has_downloads" {
