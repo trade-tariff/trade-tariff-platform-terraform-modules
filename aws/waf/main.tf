@@ -1,3 +1,8 @@
+# https://docs.aws.amazon.com/waf/latest/developerguide/how-aws-waf-works.html
+provider "aws" {
+  region = "us-east-1"
+}
+
 resource "aws_wafv2_web_acl" "this" {
   name        = var.name
   description = "WAFv2 ACL for ${var.name}"

@@ -7,7 +7,7 @@ terraform {
   }
 }
 
-# Provider myst be in us-east-1 as per https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cnames-and-https-requirements.html
+# Provider must be in us-east-1 as per https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cnames-and-https-requirements.html
 provider "aws" {
   region = "us-east-1"
 }
