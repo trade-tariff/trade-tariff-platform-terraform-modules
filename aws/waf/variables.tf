@@ -69,10 +69,18 @@ variable "ip_sets_rule" {
 
 variable "ip_rate_based_rule" {
   type = object({
-    name     = string
-    priority = number
-    limit    = number
-    action   = string
+    name      = string
+    priority  = number
+    rpm_limit = number
+    action    = string
+    custom_response = object({
+      response_code = number
+      body_key      = string
+      response_header = object({
+        name  = string
+        value = string
+      })
+    })
   })
   description = "A rate-based rule tracks the rate of requests for each originating IP address, and triggers the rule action when the rate exceeds a limit that you specify on the number of requests in any 5-minute time span"
   default     = null

@@ -21,6 +21,12 @@ resource "aws_wafv2_web_acl" "this" {
     }
   }
 
+  custom_response_body {
+    key          = "rate-limit-exceeded"
+    content      = "You have exceeded the permitted number of requests. Please try again later"
+    content_type = "TEXT_PLAIN"
+  }
+
   visibility_config {
     cloudwatch_metrics_enabled = true
     sampled_requests_enabled   = true
@@ -113,19 +119,32 @@ resource "aws_wafv2_web_acl" "this" {
       action {
         dynamic "count" {
           for_each = rule.value.action == "count" ? [1] : []
-          content {}
+          content {
+            # Nothing to do, these go into Cloudwatch
+          }
         }
 
         dynamic "block" {
           for_each = rule.value.action == "block" ? [1] : []
-          content {}
+          content {
+            custom_response {
+              custom_response_body_key = rule.value.custom_response.body_key
+              response_code            = rule.value.custom_response.response_code
+              response_header {
+                name  = rule.value.custom_response.response_header.name
+                value = rule.value.custom_response.response_header.value
+              }
+            }
+          }
         }
+
       }
 
       statement {
         rate_based_statement {
-          limit              = rule.value.limit
+          limit              = rule.value.rpm_limit * 5
           aggregate_key_type = "IP"
+
         }
       }
 
