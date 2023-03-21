@@ -36,7 +36,7 @@ resource "aws_wafv2_web_acl" "this" {
   dynamic "rule" {
     for_each = var.managed_rules
     content {
-      name     = rule.value.name
+      name     = rule.key
       priority = rule.value.priority
 
       override_action {
@@ -53,7 +53,7 @@ resource "aws_wafv2_web_acl" "this" {
 
       statement {
         managed_rule_group_statement {
-          name        = rule.value.name
+          name        = rule.key
           vendor_name = "AWS"
 
           dynamic "excluded_rule" {
@@ -67,7 +67,7 @@ resource "aws_wafv2_web_acl" "this" {
 
       visibility_config {
         cloudwatch_metrics_enabled = true
-        metric_name                = rule.value.name
+        metric_name                = rule.key
         sampled_requests_enabled   = true
       }
     }

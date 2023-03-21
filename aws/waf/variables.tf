@@ -9,51 +9,44 @@ variable "scope" {
 }
 
 variable "managed_rules" {
-  type = list(object({
-    name            = string
+  type = map(object({
     priority        = number
     override_action = string
     excluded_rules  = list(string)
   }))
   description = "List of Managed WAF rules."
-  default = [
-    {
-      name            = "AWSManagedRulesCommonRuleSet",
+  default = {
+    AWSManagedRulesCommonRuleSet = {
       priority        = 10
       override_action = "none"
       excluded_rules  = ["NoUserAgent_HEADER"]
     },
-    {
-      name            = "AWSManagedRulesAmazonIpReputationList",
+    AWSManagedRulesAmazonIpReputationList = {
       priority        = 20
       override_action = "none"
       excluded_rules  = []
     },
-    {
-      name            = "AWSManagedRulesKnownBadInputsRuleSet",
+    AWSManagedRulesKnownBadInputsRuleSet = {
       priority        = 30
       override_action = "none"
       excluded_rules  = []
     },
-    {
-      name            = "AWSManagedRulesSQLiRuleSet",
+    AWSManagedRulesSQLiRuleSet = {
       priority        = 40
       override_action = "none"
       excluded_rules  = []
     },
-    {
-      name            = "AWSManagedRulesLinuxRuleSet",
+    AWSManagedRulesLinuxRuleSet = {
       priority        = 50
       override_action = "none"
       excluded_rules  = []
     },
-    {
-      name            = "AWSManagedRulesUnixRuleSet",
+    AWSManagedRulesUnixRuleSet = {
       priority        = 60
       override_action = "none"
       excluded_rules  = []
     }
-  ]
+  }
 }
 
 variable "ip_sets_rule" {
