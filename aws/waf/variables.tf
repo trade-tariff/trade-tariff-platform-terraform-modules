@@ -21,7 +21,7 @@ variable "managed_rules" {
       name            = "AWSManagedRulesCommonRuleSet",
       priority        = 10
       override_action = "none"
-      excluded_rules  = []
+      excluded_rules  = ["NoUserAgent_HEADER"]
     },
     {
       name            = "AWSManagedRulesAmazonIpReputationList",
