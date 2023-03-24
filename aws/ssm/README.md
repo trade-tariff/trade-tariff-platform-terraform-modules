@@ -39,4 +39,5 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_kms_key_id"></a> [kms\_key\_id](#output\_kms\_key\_id) | KMS key ID, if `var.create_kms_key` is `true`. |
+| <a name="output_parameter_arns"></a> [parameter\_arns](#output\_parameter\_arns) | A map of the ARNs of the supplied parameters. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
