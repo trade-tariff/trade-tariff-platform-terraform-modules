@@ -14,3 +14,15 @@ variable "parameters" {
     }
   ))
 }
+
+variable "create_kms_key" {
+  description = "Whether to create a KMS key to encrypt the SSM parameters at rest."
+  type        = bool
+  default     = false
+}
+
+variable "kms_key_id" {
+  description = "ID of the KMS key to use to encrypt the parameters at rest. If supplying a key external to the module, this takes precedence over the key created using `create_kms_key`."
+  type        = string
+  default     = null
+}
