@@ -4,12 +4,6 @@ variable "create_distribution" {
   default     = true
 }
 
-variable "origin_access_identities" {
-  description = "Map of CloudFront origin access identities (value as a comment)"
-  type        = map(string)
-  default     = {}
-}
-
 variable "aliases" {
   description = "Extra CNAMEs (alternate domain names), if any, for this distribution."
   type        = list(string)
@@ -119,12 +113,6 @@ variable "cache_behavior" {
   description = "The map of cache behaviors for this distribution. Key `default` will be used as the default cache behavior, all other keys will be used as ordered list of cache behaviors. List from top to bottom in order of precedence. The topmost cache behavior will have precedence 0."
   type        = any
   default     = null
-}
-
-variable "ordered_cache_behavior" {
-  description = "An ordered list of cache behaviors resource for this distribution. List from top to bottom in order of precedence. The topmost cache behavior will have precedence 0."
-  type        = any
-  default     = []
 }
 
 variable "route53_zone_id" {

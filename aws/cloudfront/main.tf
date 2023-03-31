@@ -167,7 +167,7 @@ resource "aws_cloudfront_distribution" "this" {
 }
 
 resource "aws_route53_record" "cloudfront_record" {
-  count           = length(var.aliases)
+  count           = var.aliases != null ? length(var.aliases) : 0
   name            = element(var.aliases, count.index)
   type            = "CNAME"
   ttl             = 60
