@@ -34,7 +34,7 @@ variable "managed_rules" {
     AWSManagedRulesSQLiRuleSet = {
       priority        = 40
       override_action = "none"
-      excluded_rules  = []
+      excluded_rules  = ["SQLi_QUERYARGUMENTS"]
     },
     AWSManagedRulesLinuxRuleSet = {
       priority        = 50
