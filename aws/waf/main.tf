@@ -56,10 +56,13 @@ resource "aws_wafv2_web_acl" "this" {
           name        = rule.key
           vendor_name = "AWS"
 
-          dynamic "excluded_rule" {
+          dynamic "rule_action_override" {
             for_each = rule.value.excluded_rules
             content {
               name = excluded_rule.value
+              action_to_use {
+                count {}
+              }
             }
           }
         }
