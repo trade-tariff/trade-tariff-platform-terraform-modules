@@ -1,11 +1,17 @@
 config {
-  format     = "compact"
-  plugin_dir = "~/.tflint.d/plugins"
-  module     = true
+  format        = "compact"
+  ignore_module = {}
+  varfile       = []
+  module        = true
+}
+
+plugin "terraform" {
+  enabled = true
+  preset  = "all"
 }
 
 plugin "aws" {
   enabled = true
-  version = "0.22.1"
+  version = "0.23.0"
   source  = "github.com/terraform-linters/tflint-ruleset-aws"
 }
