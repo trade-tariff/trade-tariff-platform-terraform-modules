@@ -43,53 +43,34 @@ resource "github_repository" "repo" {
 }
 
 # TODO:
-# We currently have each type of github_team_repository split out into individual resources whereas this could be dyanmically created depending on whether it's push, pull, maintain or admin.
-resource "github_team_repository" "repo_team_push" {
-  count = length(var.push_teams)
+# We currently have each type of github_team_repository split out into individual resources whereas this could be dynamically created depending on whether it's push, pull, maintain or admin.
 
+resource "github_team_repository" "repo_team_push" {
+  count      = length(var.push_teams)
   team_id    = var.push_teams[count.index]
   repository = github_repository.repo.name
   permission = var.archived == "true" ? "pull" : "push"
-
-  lifecycle {
-    ignore_changes = [etag]
-  }
 }
 
 resource "github_team_repository" "repo_team_pull" {
-  count = length(var.read_teams)
-
+  count      = length(var.read_teams)
   team_id    = var.read_teams[count.index]
   repository = github_repository.repo.name
   permission = "pull"
-
-  lifecycle {
-    ignore_changes = [etag]
-  }
-
 }
-resource "github_team_repository" "repo_team_maintain" {
-  count = length(var.maintain_teams)
 
+resource "github_team_repository" "repo_team_maintain" {
+  count      = length(var.maintain_teams)
   team_id    = var.maintain_teams[count.index]
   repository = github_repository.repo.name
   permission = "maintain"
-
-  lifecycle {
-    ignore_changes = [etag]
-  }
 }
 
 resource "github_team_repository" "repo_team_admin" {
-  count = length(var.admin_teams)
-
+  count      = length(var.admin_teams)
   team_id    = var.admin_teams[count.index]
   repository = github_repository.repo.name
   permission = "admin"
-
-  lifecycle {
-    ignore_changes = [etag]
-  }
 }
 
 resource "github_branch_protection" "repo_protect_main" {
