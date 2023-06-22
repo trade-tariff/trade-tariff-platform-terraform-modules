@@ -137,3 +137,13 @@ variable "autoscaling_metrics" {
     }
   }
 }
+
+variable "target_group_arn" {
+  description = "ARN of the load balancer target group."
+  type        = string
+}
+
+variable "security_groups" {
+  description = "A list of security group IDs to asssociate with the service."
+  type        = list(string)
+}
