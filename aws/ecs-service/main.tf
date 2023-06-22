@@ -54,15 +54,15 @@ resource "aws_ecs_task_definition" "this" {
 
       portMappings = [{
         protocol      = "tcp"
-        containerPort = local.container_port
+        containerPort = var.container_port
       }]
 
       logConfiguration = {
         logDriver = "awslogs"
         options = {
           awslogs-region        = var.region
-          awslogs-group         = data.aws_cloudwatch_log_group.this.name
-          awslogs-stream-prefix = "ec2"
+          awslogs-create-group  = true
+          awslogs-stream-prefix = "ecs"
         }
       }
     }
@@ -77,7 +77,6 @@ resource "aws_appautoscaling_target" "this" {
   resource_id        = "service/${var.cluster_name}/${aws_ecs_service.this.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
-  role_arn           = aws_iam_role.this.arn
 }
 
 resource "aws_appautoscaling_policy" "this" {
