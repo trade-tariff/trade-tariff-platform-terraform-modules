@@ -36,11 +36,12 @@ resource "aws_ecs_service" "this" {
 }
 
 resource "aws_ecs_task_definition" "this" {
-  family             = "${var.service_name}-${var.environment}-${local.account_id}"
-  network_mode       = "awsvpc"
-  execution_role_arn = var.execution_role_arn
-  task_role_arn      = var.task_role_arn
-  skip_destroy       = var.skip_destroy
+  family                   = "${var.service_name}-${var.environment}-${local.account_id}"
+  network_mode             = "awsvpc"
+  execution_role_arn       = var.execution_role_arn
+  task_role_arn            = var.task_role_arn
+  skip_destroy             = var.skip_destroy
+  requires_compatibilities = ["FARGATE"]
 
   container_definitions = jsonencode([
     {
