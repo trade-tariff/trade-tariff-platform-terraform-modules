@@ -147,3 +147,25 @@ variable "security_groups" {
   description = "A list of security group IDs to asssociate with the service."
   type        = list(string)
 }
+
+variable "container_instance_policy" {
+  description = "ECS instance policy"
+  type        = string
+  default     = "container-instances-policy"
+}
+
+variable "task_name" {
+  description = "ECS Task name"
+  type        = string
+}
+
+variable "service_role_namee" {
+  description = "Service role name"
+  type        = string
+}
+
+
+
+
+
+
