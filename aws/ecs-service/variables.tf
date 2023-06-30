@@ -163,9 +163,3 @@ variable "service_role_namee" {
   description = "Service role name"
   type        = string
 }
-
-
-
-
-
-
