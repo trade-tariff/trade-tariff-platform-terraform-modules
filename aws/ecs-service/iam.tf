@@ -33,7 +33,7 @@ resource "aws_iam_role_policy_attachment" "ecs_tasks_execution_role" {
 resource "aws_iam_role_policy" "container_instances_policy" {
   name   = var.container_instance_policy
   role   = aws_iam_role.container_instances.id
-  policy = file("${path.module}/files/amazonecs-fullaccess.json")
+  policy = "arn:aws:iam::aws:policy/service-role/AmazonECS_FullAccess"
 }
 
 resource "aws_iam_role" "container_instances" {
