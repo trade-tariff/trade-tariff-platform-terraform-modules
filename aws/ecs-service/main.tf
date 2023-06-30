@@ -38,8 +38,8 @@ resource "aws_ecs_service" "this" {
 resource "aws_ecs_task_definition" "this" {
   family             = "${var.service_name}-${var.environment}-${local.account_id}"
   network_mode       = "awsvpc"
-  execution_role_arn = var.execution_role_arn
-  task_role_arn      = var.task_role_arn
+  execution_role_arn = aws_iam_role.execution_role.arn
+  task_role_arn      = aws_iam_role.task_role.arn
   skip_destroy       = var.skip_destroy
 
   container_definitions = jsonencode([

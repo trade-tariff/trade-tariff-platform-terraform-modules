@@ -77,16 +77,6 @@ variable "container_port" {
   default     = 80
 }
 
-variable "task_role_arn" {
-  description = "ARN of the task role to use for the service."
-  type        = string
-}
-
-variable "execution_role_arn" {
-  description = "ARN of the execution role to use for the service."
-  type        = string
-}
-
 variable "cluster_name" {
   description = "Name of the ECS Cluster to deploy the service into."
   type        = string
@@ -148,18 +138,3 @@ variable "security_groups" {
   type        = list(string)
 }
 
-variable "container_instance_policy" {
-  description = "ECS instance policy"
-  type        = string
-  default     = "container-instances-policy"
-}
-
-variable "task_name" {
-  description = "ECS Task name"
-  type        = string
-}
-
-variable "service_role_namee" {
-  description = "Service role name"
-  type        = string
-}
