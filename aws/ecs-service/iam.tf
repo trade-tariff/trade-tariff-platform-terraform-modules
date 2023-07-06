@@ -11,7 +11,7 @@ data "aws_iam_policy_document" "ecs_tasks_assume_role_policy" {
 
 resource "aws_iam_role" "execution_role" {
   name               = "${var.service_name}-execution-role"
-  assume_role_policy = data.aws_iam_policy_document.ecs_tasks_assume_role_policy
+  assume_role_policy = data.aws_iam_policy_document.ecs_tasks_assume_role_policy.json
   managed_policy_arns = [
     "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
   ]
