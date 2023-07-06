@@ -36,11 +36,12 @@ resource "aws_ecs_service" "this" {
 }
 
 resource "aws_ecs_task_definition" "this" {
-  family             = "${var.service_name}-${var.environment}-${local.account_id}"
-  network_mode       = "awsvpc"
-  execution_role_arn = aws_iam_role.execution_role.arn
-  task_role_arn      = aws_iam_role.task_role.arn
-  skip_destroy       = var.skip_destroy
+  family                   = "${var.service_name}-${var.environment}-${local.account_id}"
+  network_mode             = "awsvpc"
+  execution_role_arn       = aws_iam_role.execution_role.arn
+  task_role_arn            = aws_iam_role.task_role.arn
+  skip_destroy             = var.skip_destroy
+  requires_compatibilities = ["FARGATE"]
 
   container_definitions = jsonencode([
     {
@@ -67,6 +68,11 @@ resource "aws_ecs_task_definition" "this" {
       }
     }
   ])
+
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "X86_64"
+  }
 
   tags = local.tags
 }
