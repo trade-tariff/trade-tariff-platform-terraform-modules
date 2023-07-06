@@ -13,6 +13,7 @@ locals {
       local.default_secrets_config
     )
   )
+
   merged_environment = distinct(
     concat(
       var.service_environment_config,
@@ -34,4 +35,9 @@ data "aws_caller_identity" "current" {}
 
 data "aws_ecs_cluster" "this" {
   cluster_name = var.cluster_name
+}
+
+data "aws_cloudwatch_log_group" "this" {
+  count = var.create_cloudwatch_log_group ? 0 : 1
+  name  = var.cloudwatch_log_group_name
 }
