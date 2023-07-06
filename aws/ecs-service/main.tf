@@ -62,8 +62,7 @@ resource "aws_ecs_task_definition" "this" {
         options = {
           awslogs-region        = var.region
           awslogs-stream-prefix = "ecs"
-          awslogs-group         = data.aws_cloudwatch_log_group.this[0].name
-          awslogs-create-group  = tostring(var.create_cloudwatch_log_group)
+          awslogs-group         = data.aws_cloudwatch_log_group.this.name
         }
       }
     }

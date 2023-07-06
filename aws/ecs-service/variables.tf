@@ -143,8 +143,3 @@ variable "cloudwatch_log_group_name" {
   type        = string
 }
 
-variable "create_cloudwatch_log_group" {
-  description = "Whether to create the given log group for the service."
-  type        = bool
-  default     = false
-}

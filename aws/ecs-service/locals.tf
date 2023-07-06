@@ -4,8 +4,8 @@ locals {
 
   # TODO:
   # pre-populate these with things that are common between ALL applications
-  default_environment_config = [{}]
-  default_secrets_config     = [{}]
+  default_environment_config = []
+  default_secrets_config     = []
 
   merged_secrets = distinct(
     concat(
@@ -38,6 +38,5 @@ data "aws_ecs_cluster" "this" {
 }
 
 data "aws_cloudwatch_log_group" "this" {
-  count = var.create_cloudwatch_log_group ? 0 : 1
-  name  = var.cloudwatch_log_group_name
+  name = var.cloudwatch_log_group_name
 }
