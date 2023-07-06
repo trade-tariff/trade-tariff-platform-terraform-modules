@@ -48,7 +48,7 @@ resource "aws_ecs_task_definition" "this" {
       image       = "${var.docker_image}:${var.docker_tag}"
       cpu         = var.cpu
       memory      = var.memory
-      essential   = true
+      essential   = "true"
       environment = local.merged_environment
       secrets     = local.merged_secrets
 
@@ -61,7 +61,7 @@ resource "aws_ecs_task_definition" "this" {
         logDriver = "awslogs"
         options = {
           awslogs-region        = var.region
-          awslogs-create-group  = true
+          awslogs-create-group  = "true"
           awslogs-stream-prefix = "ecs"
         }
       }
