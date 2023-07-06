@@ -42,13 +42,13 @@ resource "aws_ecs_task_definition" "this" {
   task_role_arn            = aws_iam_role.task_role.arn
   skip_destroy             = var.skip_destroy
   requires_compatibilities = ["FARGATE"]
+  cpu                      = var.cpu
+  memory                   = var.memory
 
   container_definitions = jsonencode([
     {
       name        = var.service_name
       image       = "${var.docker_image}:${var.docker_tag}"
-      cpu         = var.cpu
-      memory      = var.memory
       essential   = true
       environment = local.merged_environment
       secrets     = local.merged_secrets
