@@ -21,7 +21,7 @@ resource "aws_iam_role_policy_attachment" "execution_role_policy" {
 
 resource "aws_iam_role_policy_attachment" "execution_role_additional_policies" {
   for_each   = toset(compact(var.execution_role_policy_arns))
-  role       = aws_iam_role.execution_role.name_prefix
+  role       = aws_iam_role.execution_role.name
   policy_arn = each.value
 }
 
