@@ -154,3 +154,9 @@ variable "task_role_policy_arns" {
   type        = list(string)
   default     = [""]
 }
+
+variable "timeout" {
+  description = "Timeout time for the ECS service to become stable before producing a Terraform error."
+  type        = string
+  default     = "15m"
+}

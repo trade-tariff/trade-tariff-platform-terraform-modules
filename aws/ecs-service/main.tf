@@ -23,9 +23,9 @@ resource "aws_ecs_service" "this" {
   wait_for_steady_state              = var.wait_for_steady_state
 
   timeouts {
-    create = "5m"
-    update = "5m"
-    delete = "5m"
+    create = var.timeout
+    update = var.timeout
+    delete = var.timeout
   }
 
   lifecycle {
