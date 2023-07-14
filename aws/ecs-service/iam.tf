@@ -20,9 +20,9 @@ resource "aws_iam_role_policy_attachment" "execution_role_policy" {
 }
 
 resource "aws_iam_role_policy_attachment" "execution_role_additional_policies" {
-  for_each   = toset(compact(var.execution_role_policy_arns))
+  count      = length(var.execution_role_policy_arns)
   role       = aws_iam_role.execution_role.name
-  policy_arn = each.value
+  policy_arn = var.execution_role_policy_arns[count.index]
 }
 
 resource "aws_iam_role" "task_role" {
@@ -36,7 +36,7 @@ resource "aws_iam_role_policy_attachment" "task_role_policy" {
 }
 
 resource "aws_iam_role_policy_attachment" "task_role_additional_policies" {
-  for_each   = toset(compact(var.task_role_policy_arns))
+  count      = length(var.task_role_policy_arns)
   role       = aws_iam_role.task_role.name
-  policy_arn = each.value
+  policy_arn = var.task_role_policy_arns[count.index]
 }

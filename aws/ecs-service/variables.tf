@@ -146,13 +146,13 @@ variable "cloudwatch_log_group_name" {
 variable "execution_role_policy_arns" {
   description = "A list of additional policy ARNs to attach to the service's execution role."
   type        = list(string)
-  default     = [""]
+  default     = []
 }
 
 variable "task_role_policy_arns" {
   description = "A list of additional policy ARNs to attach to the service's task role."
   type        = list(string)
-  default     = [""]
+  default     = []
 }
 
 variable "timeout" {
