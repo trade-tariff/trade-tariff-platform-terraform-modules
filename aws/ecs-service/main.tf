@@ -122,8 +122,4 @@ resource "aws_service_discovery_service" "this" {
       type = "A"
     }
   }
-
-  health_check_custom_config {
-    failure_threshold = 5
-  }
 }
