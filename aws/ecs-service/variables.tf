@@ -160,3 +160,9 @@ variable "timeout" {
   type        = string
   default     = "15m"
 }
+
+variable "private_dns_namespace" {
+  description = "Private DNS namespace name. If provided, enables service discovery."
+  type        = string
+  default     = null
+}
