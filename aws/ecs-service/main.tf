@@ -18,6 +18,13 @@ resource "aws_ecs_service" "this" {
     subnets          = var.subnet_ids
   }
 
+  dynamic "service_registries" {
+    for_each = var.private_dns_namespace != null ? [true] : []
+    content {
+      registry_arn = aws_service_discovery_service.this[0].arn
+    }
+  }
+
   deployment_maximum_percent         = var.deployment_maximum_percent
   deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
   wait_for_steady_state              = var.wait_for_steady_state
@@ -101,4 +108,18 @@ resource "aws_appautoscaling_policy" "this" {
   }
 
   depends_on = [aws_appautoscaling_target.this]
+}
+
+resource "aws_service_discovery_service" "this" {
+  count = var.private_dns_namespace != null ? 1 : 0
+  name  = var.service_name
+
+  dns_config {
+    namespace_id   = data.aws_service_discovery_dns_namespace.this[0].id
+    routing_policy = "MULTIVALUE"
+    dns_records {
+      ttl  = 10
+      type = "A"
+    }
+  }
 }
