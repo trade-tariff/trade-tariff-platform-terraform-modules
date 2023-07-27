@@ -126,3 +126,15 @@ variable "health_check_id" {
   type        = string
   default     = null
 }
+
+variable "create_alias" {
+  description = "Whether to create a Route 53 A record."
+  type        = bool
+  default     = false
+}
+
+variable "create_cname" {
+  description = "Whether to create a Route 53 CNAME record."
+  type        = bool
+  default     = false
+}
