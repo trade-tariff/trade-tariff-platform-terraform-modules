@@ -166,8 +166,21 @@ resource "aws_cloudfront_distribution" "this" {
   }
 }
 
-resource "aws_route53_record" "cloudfront_record" {
-  count           = var.aliases != null ? length(var.aliases) : 0
+resource "aws_route53_record" "alias_record" {
+  count   = var.aliases != null && var.create_alias ? length(var.aliases) : 0
+  name    = element(var.aliases, count.index)
+  type    = "A"
+  zone_id = var.route53_zone_id
+
+  alias {
+    name                   = aws_cloudfront_distribution.this.domain_name
+    zone_id                = aws_cloudfront_distribution.this.hosted_zone_id
+    evaluate_target_health = true
+  }
+}
+
+resource "aws_route53_record" "cname_record" {
+  count           = var.aliases != null && var.create_cname ? length(var.aliases) : 0
   name            = element(var.aliases, count.index)
   type            = "CNAME"
   ttl             = 60
