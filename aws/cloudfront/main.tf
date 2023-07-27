@@ -173,8 +173,8 @@ resource "aws_route53_record" "alias_record" {
   zone_id = var.route53_zone_id
 
   alias {
-    name                   = aws_cloudfront_distribution.this.domain_name
-    zone_id                = aws_cloudfront_distribution.this.hosted_zone_id
+    name                   = aws_cloudfront_distribution.this[0].domain_name
+    zone_id                = aws_cloudfront_distribution.this[0].hosted_zone_id
     evaluate_target_health = true
   }
 }
