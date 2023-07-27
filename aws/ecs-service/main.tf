@@ -6,6 +6,8 @@ resource "aws_ecs_service" "this" {
   launch_type      = "FARGATE"
   platform_version = "LATEST"
 
+  enable_execute_command = var.enable_ecs_exec
+
   load_balancer {
     container_name   = var.service_name
     container_port   = var.container_port

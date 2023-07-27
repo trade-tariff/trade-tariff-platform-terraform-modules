@@ -166,3 +166,9 @@ variable "private_dns_namespace" {
   type        = string
   default     = null
 }
+
+variable "enable_ecs_exec" {
+  description = "Whether to enable AWS ECS Exec for the task. Defaults to `false`."
+  type        = bool
+  default     = false
+}
