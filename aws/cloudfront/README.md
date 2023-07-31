@@ -57,5 +57,7 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_aws_cloudfront_distribution_arn"></a> [aws\_cloudfront\_distribution\_arn](#output\_aws\_cloudfront\_distribution\_arn) | n/a |
+| <a name="output_aws_cloudfront_distribution_domain_name"></a> [aws\_cloudfront\_distribution\_domain\_name](#output\_aws\_cloudfront\_distribution\_domain\_name) | n/a |
+| <a name="output_aws_cloudfront_distribution_hosted_zone_id"></a> [aws\_cloudfront\_distribution\_hosted\_zone\_id](#output\_aws\_cloudfront\_distribution\_hosted\_zone\_id) | n/a |
 | <a name="output_aws_cloudfront_distribution_id"></a> [aws\_cloudfront\_distribution\_id](#output\_aws\_cloudfront\_distribution\_id) | n/a |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
