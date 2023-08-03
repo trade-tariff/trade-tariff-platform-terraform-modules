@@ -59,7 +59,7 @@ resource "aws_wafv2_web_acl" "this" {
           dynamic "rule_action_override" {
             for_each = toset(rule.value.excluded_rules)
             content {
-              name = each.key
+              name = excluded_rule.key
               action_to_use {
                 count {}
               }
