@@ -14,7 +14,9 @@ variable "managed_rules" {
     override_action = string
     excluded_rules  = list(string)
   }))
+
   description = "List of Managed WAF rules."
+
   default = {
     AWSManagedRulesCommonRuleSet = {
       priority        = 10
