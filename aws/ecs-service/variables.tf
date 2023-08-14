@@ -178,3 +178,9 @@ variable "container_command" {
   type        = list(string)
   default     = null
 }
+
+variable "container_entrypoint" {
+  description = "String array representing the entrypoint of the container. Supply to override the Dockerfile. Defaults to `null`, that is, not overriding the Dockerfile."
+  type        = list(string)
+  default     = null
+}

@@ -62,7 +62,8 @@ resource "aws_ecs_task_definition" "this" {
       environment = local.merged_environment
       secrets     = local.merged_secrets
 
-      command = var.container_command
+      entryPoint = var.container_entrypoint
+      command    = var.container_command
 
       portMappings = [{
         protocol      = "tcp"
