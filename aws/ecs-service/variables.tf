@@ -131,6 +131,7 @@ variable "autoscaling_metrics" {
 variable "target_group_arn" {
   description = "ARN of the load balancer target group."
   type        = string
+  default     = null
 }
 
 variable "security_groups" {
