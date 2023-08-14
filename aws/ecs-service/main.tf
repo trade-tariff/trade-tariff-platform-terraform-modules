@@ -8,10 +8,13 @@ resource "aws_ecs_service" "this" {
 
   enable_execute_command = var.enable_ecs_exec
 
-  load_balancer {
-    container_name   = var.service_name
-    container_port   = var.container_port
-    target_group_arn = var.target_group_arn
+  dynamic "load_balancer" {
+    for_each = var.target_group_arn != null ? [1] : []
+    content {
+      container_name   = var.service_name
+      container_port   = var.container_port
+      target_group_arn = var.target_group_arn
+    }
   }
 
   network_configuration {
@@ -62,7 +65,8 @@ resource "aws_ecs_task_definition" "this" {
       environment = local.merged_environment
       secrets     = local.merged_secrets
 
-      command = var.container_command
+      entryPoint = var.container_entrypoint
+      command    = var.container_command
 
       portMappings = [{
         protocol      = "tcp"

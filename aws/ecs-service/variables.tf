@@ -131,6 +131,7 @@ variable "autoscaling_metrics" {
 variable "target_group_arn" {
   description = "ARN of the load balancer target group."
   type        = string
+  default     = null
 }
 
 variable "security_groups" {
@@ -175,6 +176,12 @@ variable "enable_ecs_exec" {
 
 variable "container_command" {
   description = "String array representing the command to run in the container. First argument should be the shell to use, if required. Defaults to `null`, that is, no command override."
+  type        = list(string)
+  default     = null
+}
+
+variable "container_entrypoint" {
+  description = "String array representing the entrypoint of the container. Supply to override the Dockerfile. Defaults to `null`, that is, not overriding the Dockerfile."
   type        = list(string)
   default     = null
 }
