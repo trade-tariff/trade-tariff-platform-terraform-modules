@@ -172,3 +172,9 @@ variable "enable_ecs_exec" {
   type        = bool
   default     = false
 }
+
+variable "container_command" {
+  description = "String array representing the command to run in the container. First argument should be the shell to use, if required. Defaults to `null`, that is, no command override."
+  type        = list(string)
+  default     = null
+}
