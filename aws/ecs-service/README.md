@@ -62,7 +62,7 @@ No modules.
 | <a name="input_enable_ecs_exec"></a> [enable\_ecs\_exec](#input\_enable\_ecs\_exec) | Whether to enable AWS ECS Exec for the task. Defaults to `false`. | `bool` | `false` | no |
 | <a name="input_environment"></a> [environment](#input\_environment) | Environment name, i.e. `development`, `staging`, `production`. | `string` | n/a | yes |
 | <a name="input_execution_role_policy_arns"></a> [execution\_role\_policy\_arns](#input\_execution\_role\_policy\_arns) | A list of additional policy ARNs to attach to the service's execution role. | `list(string)` | `[]` | no |
-| <a name="input_green_target_group_name"></a> [green\_target\_group\_name](#input\_green\_target\_group\_name) | Name of the blue target group. | `string` | `null` | no |
+| <a name="input_green_target_group_name"></a> [green\_target\_group\_name](#input\_green\_target\_group\_name) | Name of the green target group. | `string` | `null` | no |
 | <a name="input_listener_arn"></a> [listener\_arn](#input\_listener\_arn) | ARN of the load balancer listener to use with blue-green deployment. | `string` | `null` | no |
 | <a name="input_max_capacity"></a> [max\_capacity](#input\_max\_capacity) | A maximum capacity for autoscaling. | `number` | n/a | yes |
 | <a name="input_memory"></a> [memory](#input\_memory) | Memory limits for container. | `number` | `512` | no |
