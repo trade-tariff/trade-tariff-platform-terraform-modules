@@ -185,3 +185,32 @@ variable "container_entrypoint" {
   type        = list(string)
   default     = null
 }
+
+variable "enable_blue_green" {
+  description = "Whether to enable blue-green deployments."
+  type        = bool
+  default     = false
+}
+
+variable "listener_arn" {
+  description = "ARN of the load balancer listener to use with blue-green deployment."
+  type        = string
+  default     = null
+}
+
+variable "blue_target_group_name" {
+  description = "Name of the blue target group."
+  type        = string
+  default     = null
+}
+
+variable "green_target_group_name" {
+  description = "Name of the green target group."
+  type        = string
+  default     = null
+}
+
+variable "deployment_configuration" {
+  description = "CodeDeploy deployment configuration, e.g. `CodeDeployDefault.ECSAllAtOnce`."
+  type        = string
+}
