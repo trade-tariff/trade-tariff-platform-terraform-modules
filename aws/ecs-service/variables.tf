@@ -209,3 +209,8 @@ variable "green_target_group_name" {
   type        = string
   default     = null
 }
+
+variable "deployment_configuration" {
+  description = "CodeDeploy deployment configuration, e.g. `CodeDeployDefault.ECSAllAtOnce`."
+  type        = string
+}

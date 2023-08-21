@@ -142,7 +142,7 @@ resource "aws_codedeploy_app" "this" {
 resource "aws_codedeploy_deployment_group" "this" {
   count                  = var.enable_blue_green ? 1 : 0
   app_name               = aws_codedeploy_app.this[0].name
-  deployment_config_name = "CodeDeployDefault.ECSAllAtOnce"
+  deployment_config_name = var.deployment_configuration
   deployment_group_name  = var.service_name
   service_role_arn       = aws_iam_role.execution_role.arn
 
