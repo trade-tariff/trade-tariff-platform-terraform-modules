@@ -3,8 +3,11 @@ data "aws_iam_policy_document" "ecs_tasks_assume_role_policy" {
     actions = ["sts:AssumeRole"]
 
     principals {
-      type        = "Service"
-      identifiers = ["ecs-tasks.amazonaws.com"]
+      type = "Service"
+      identifiers = [
+        "ecs-tasks.amazonaws.com",
+        "codedeploy.amazonaws.com"
+      ]
     }
   }
 }
