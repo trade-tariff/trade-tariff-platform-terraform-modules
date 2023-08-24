@@ -23,8 +23,7 @@ locals {
 
   tags = merge(
     {
-      Terraform   = "true"
-      Environment = title(var.environment)
+      Terraform = "true"
     },
     var.tags,
   )
