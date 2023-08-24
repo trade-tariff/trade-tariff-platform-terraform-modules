@@ -1,5 +1,5 @@
 resource "aws_ecs_service" "this" {
-  name             = "${var.service_name}-${var.environment}"
+  name             = var.service_name
   cluster          = local.cluster_arn
   task_definition  = aws_ecs_task_definition.this.arn
   desired_count    = var.service_count
@@ -30,6 +30,11 @@ resource "aws_ecs_service" "this" {
     }
   }
 
+  deployment_circuit_breaker {
+    enable   = var.enable_rollback
+    rollback = var.enable_rollback
+  }
+
   deployment_maximum_percent         = var.deployment_maximum_percent
   deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
   wait_for_steady_state              = var.wait_for_steady_state
@@ -48,7 +53,7 @@ resource "aws_ecs_service" "this" {
 }
 
 resource "aws_ecs_task_definition" "this" {
-  family                   = "${var.service_name}-${var.environment}-${local.account_id}"
+  family                   = "${var.service_name}-${local.account_id}"
   network_mode             = "awsvpc"
   execution_role_arn       = aws_iam_role.execution_role.arn
   task_role_arn            = aws_iam_role.task_role.arn

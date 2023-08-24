@@ -1,8 +1,3 @@
-variable "environment" {
-  description = "Environment name, i.e. `development`, `staging`, `production`."
-  type        = string
-}
-
 variable "region" {
   description = "AWS region."
   type        = string
@@ -60,15 +55,15 @@ variable "service_count" {
 }
 
 variable "deployment_maximum_percent" {
-  description = "Maximum deployment as a percentage of `service_count`. Defaults to 100."
+  description = "Maximum deployment as a percentage of `service_count`. Defaults to 200 for zero downtime deploys.."
   type        = number
-  default     = 100
+  default     = 200
 }
 
 variable "deployment_minimum_healthy_percent" {
-  description = "Minimum healthy percentage for a deployment. Defaults to 0, disabling this check."
+  description = "Minimum healthy percentage for a deployment. Defaults to 100 for zero downtime deploys."
   type        = number
-  default     = 0
+  default     = 100
 }
 
 variable "container_port" {
@@ -213,4 +208,10 @@ variable "green_target_group_name" {
 variable "deployment_configuration" {
   description = "CodeDeploy deployment configuration, e.g. `CodeDeployDefault.ECSAllAtOnce`."
   type        = string
+}
+
+variable "enable_rollback" {
+  description = "Whether to enable circuit breaker rollbacks. Defaults to `true`."
+  type        = bool
+  default     = true
 }
