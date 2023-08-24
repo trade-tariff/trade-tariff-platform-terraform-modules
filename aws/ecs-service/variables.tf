@@ -208,6 +208,7 @@ variable "green_target_group_name" {
 variable "deployment_configuration" {
   description = "CodeDeploy deployment configuration, e.g. `CodeDeployDefault.ECSAllAtOnce`."
   type        = string
+  default     = null
 }
 
 variable "enable_rollback" {
