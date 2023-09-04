@@ -61,7 +61,9 @@ resource "aws_ecs_task_definition" "this" {
   requires_compatibilities = ["FARGATE"]
   cpu                      = var.cpu
   memory                   = var.memory
-  container_definitions    = var.init_container ? local.init_container_definition : local.container_definition
+
+  # disgusting hack, see https://stackoverflow.com/a/74935621
+  container_definitions = flatten([local.init_container_definition, local.container_definition][var.init_container ? 0 : 1])
 
   runtime_platform {
     operating_system_family = "LINUX"
