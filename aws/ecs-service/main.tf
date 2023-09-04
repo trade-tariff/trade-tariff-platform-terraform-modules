@@ -61,33 +61,7 @@ resource "aws_ecs_task_definition" "this" {
   requires_compatibilities = ["FARGATE"]
   cpu                      = var.cpu
   memory                   = var.memory
-
-  container_definitions = jsonencode([
-    {
-      name        = var.service_name
-      image       = "${var.docker_image}:${var.docker_tag}"
-      essential   = true
-      environment = local.merged_environment
-      secrets     = local.merged_secrets
-
-      entryPoint = var.container_entrypoint
-      command    = var.container_command
-
-      portMappings = [{
-        protocol      = "tcp"
-        containerPort = var.container_port
-      }]
-
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          awslogs-region        = var.region
-          awslogs-stream-prefix = "ecs"
-          awslogs-group         = data.aws_cloudwatch_log_group.this.name
-        }
-      }
-    }
-  ])
+  container_definitions    = var.init_container ? local.init_container_definition : local.container_definition
 
   runtime_platform {
     operating_system_family = "LINUX"
