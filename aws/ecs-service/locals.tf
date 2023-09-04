@@ -85,7 +85,7 @@ locals {
         awslogs-group         = data.aws_cloudwatch_log_group.this.name
       }
     }
-  }, null]
+  }]
 }
 
 data "aws_caller_identity" "current" {}

@@ -63,7 +63,7 @@ resource "aws_ecs_task_definition" "this" {
   memory                   = var.memory
 
   # disgusting hack, see https://stackoverflow.com/a/74935621
-  container_definitions = flatten([local.init_container_definition, local.container_definition][var.init_container ? 0 : 1])
+  container_definitions = jsonencode([local.init_container_definition, local.container_definition][var.init_container ? 0 : 1])
 
   runtime_platform {
     operating_system_family = "LINUX"
