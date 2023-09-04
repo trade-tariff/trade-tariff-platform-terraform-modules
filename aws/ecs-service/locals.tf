@@ -63,7 +63,7 @@ locals {
     }
   ]
 
-  container_definition = {
+  container_definition = [{
     name        = var.service_name
     image       = "${var.docker_image}:${var.docker_tag}"
     essential   = true
@@ -85,7 +85,7 @@ locals {
         awslogs-group         = data.aws_cloudwatch_log_group.this.name
       }
     }
-  }
+  }, null]
 }
 
 data "aws_caller_identity" "current" {}
