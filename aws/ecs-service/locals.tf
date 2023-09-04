@@ -18,10 +18,6 @@ locals {
       secrets     = var.service_secrets_config
       entryPoint  = var.init_container_entrypoint
       command     = var.init_container_command
-      portMappings = [{
-        protocol      = "tcp"
-        containerPort = var.container_port
-      }]
 
       logConfiguration = {
         logDriver = "awslogs"
@@ -38,9 +34,8 @@ locals {
       essential   = true
       environment = var.service_environment_config
       secrets     = var.service_secrets_config
-
-      entryPoint = var.container_entrypoint
-      command    = var.container_command
+      entryPoint  = var.container_entrypoint
+      command     = var.container_command
 
       portMappings = [{
         protocol      = "tcp"

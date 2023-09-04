@@ -17,6 +17,8 @@ resource "aws_ecs_service" "this" {
     }
   }
 
+  health_check_grace_period_seconds = 60
+
   network_configuration {
     assign_public_ip = false
     security_groups  = var.security_groups
