@@ -2,25 +2,6 @@ locals {
   account_id  = data.aws_caller_identity.current.account_id
   cluster_arn = data.aws_ecs_cluster.this.arn
 
-  # TODO:
-  # pre-populate these with things that are common between ALL applications
-  default_environment_config = []
-  default_secrets_config     = []
-
-  merged_secrets = distinct(
-    concat(
-      var.service_secrets_config,
-      local.default_secrets_config
-    )
-  )
-
-  merged_environment = distinct(
-    concat(
-      var.service_environment_config,
-      local.default_environment_config
-    )
-  )
-
   tags = merge(
     {
       Terraform = "true"
@@ -28,6 +9,78 @@ locals {
     var.tags,
   )
 
+  init_container_definition = [
+    {
+      name        = "${var.service_name}-init"
+      image       = "${var.docker_image}:${var.docker_tag}"
+      essential   = false
+      environment = var.service_environment_config
+      secrets     = var.service_secrets_config
+      entryPoint  = var.init_container_entrypoint
+      command     = var.init_container_command
+
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-region        = var.region
+          awslogs-stream-prefix = "ecs"
+          awslogs-group         = data.aws_cloudwatch_log_group.this.name
+        }
+      }
+    },
+    {
+      name        = var.service_name
+      image       = "${var.docker_image}:${var.docker_tag}"
+      essential   = true
+      environment = var.service_environment_config
+      secrets     = var.service_secrets_config
+      entryPoint  = var.container_entrypoint
+      command     = var.container_command
+
+      portMappings = [{
+        protocol      = "tcp"
+        containerPort = var.container_port
+      }]
+
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-region        = var.region
+          awslogs-stream-prefix = "ecs"
+          awslogs-group         = data.aws_cloudwatch_log_group.this.name
+        }
+      }
+
+      dependsOn = [{
+        containerName = "${var.service_name}-init"
+        condition     = "COMPLETE"
+      }]
+    }
+  ]
+
+  container_definition = [{
+    name        = var.service_name
+    image       = "${var.docker_image}:${var.docker_tag}"
+    essential   = true
+    environment = var.service_environment_config
+    secrets     = var.service_secrets_config
+    entryPoint  = var.container_entrypoint
+    command     = var.container_command
+
+    portMappings = [{
+      protocol      = "tcp"
+      containerPort = var.container_port
+    }]
+
+    logConfiguration = {
+      logDriver = "awslogs"
+      options = {
+        awslogs-region        = var.region
+        awslogs-stream-prefix = "ecs"
+        awslogs-group         = data.aws_cloudwatch_log_group.this.name
+      }
+    }
+  }]
 }
 
 data "aws_caller_identity" "current" {}

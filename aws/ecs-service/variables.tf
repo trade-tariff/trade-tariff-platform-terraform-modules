@@ -216,3 +216,23 @@ variable "enable_rollback" {
   type        = bool
   default     = true
 }
+
+### Init Container
+
+variable "init_container" {
+  description = "Whether to use an init container."
+  type        = bool
+  default     = false
+}
+
+variable "init_container_entrypoint" {
+  description = "String array representing the entrypoint of the init container. Supply to override the Dockerfile. Defaults to `null`, that is, not overriding the Dockerfile."
+  type        = list(string)
+  default     = null
+}
+
+variable "init_container_command" {
+  description = "String array representing the command to run in the init container. First argument should be the shell to use, if required. Defaults to `null`, that is, no command override."
+  type        = list(string)
+  default     = null
+}

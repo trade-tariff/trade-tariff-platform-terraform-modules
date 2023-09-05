@@ -62,32 +62,8 @@ resource "aws_ecs_task_definition" "this" {
   cpu                      = var.cpu
   memory                   = var.memory
 
-  container_definitions = jsonencode([
-    {
-      name        = var.service_name
-      image       = "${var.docker_image}:${var.docker_tag}"
-      essential   = true
-      environment = local.merged_environment
-      secrets     = local.merged_secrets
-
-      entryPoint = var.container_entrypoint
-      command    = var.container_command
-
-      portMappings = [{
-        protocol      = "tcp"
-        containerPort = var.container_port
-      }]
-
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          awslogs-region        = var.region
-          awslogs-stream-prefix = "ecs"
-          awslogs-group         = data.aws_cloudwatch_log_group.this.name
-        }
-      }
-    }
-  ])
+  # disgusting hack, see https://stackoverflow.com/a/74935621
+  container_definitions = jsonencode([local.init_container_definition, local.container_definition][var.init_container ? 0 : 1])
 
   runtime_platform {
     operating_system_family = "LINUX"

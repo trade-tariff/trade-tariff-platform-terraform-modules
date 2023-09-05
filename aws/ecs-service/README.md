@@ -64,6 +64,9 @@ No modules.
 | <a name="input_enable_rollback"></a> [enable\_rollback](#input\_enable\_rollback) | Whether to enable circuit breaker rollbacks. Defaults to `true`. | `bool` | `true` | no |
 | <a name="input_execution_role_policy_arns"></a> [execution\_role\_policy\_arns](#input\_execution\_role\_policy\_arns) | A list of additional policy ARNs to attach to the service's execution role. | `list(string)` | `[]` | no |
 | <a name="input_green_target_group_name"></a> [green\_target\_group\_name](#input\_green\_target\_group\_name) | Name of the green target group. | `string` | `null` | no |
+| <a name="input_init_container"></a> [init\_container](#input\_init\_container) | Whether to use an init container. | `bool` | `false` | no |
+| <a name="input_init_container_command"></a> [init\_container\_command](#input\_init\_container\_command) | String array representing the command to run in the init container. First argument should be the shell to use, if required. Defaults to `null`, that is, no command override. | `list(string)` | `null` | no |
+| <a name="input_init_container_entrypoint"></a> [init\_container\_entrypoint](#input\_init\_container\_entrypoint) | String array representing the entrypoint of the init container. Supply to override the Dockerfile. Defaults to `null`, that is, not overriding the Dockerfile. | `list(string)` | `null` | no |
 | <a name="input_listener_arn"></a> [listener\_arn](#input\_listener\_arn) | ARN of the load balancer listener to use with blue-green deployment. | `string` | `null` | no |
 | <a name="input_max_capacity"></a> [max\_capacity](#input\_max\_capacity) | A maximum capacity for autoscaling. | `number` | n/a | yes |
 | <a name="input_memory"></a> [memory](#input\_memory) | Memory limits for container. | `number` | `512` | no |
