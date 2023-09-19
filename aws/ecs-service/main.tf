@@ -70,6 +70,15 @@ resource "aws_ecs_task_definition" "this" {
     cpu_architecture        = "X86_64"
   }
 
+  log_configuration {
+    log_driver = "awslogs"
+    options = {
+      "awslogs-group"         = var.cloudwatch_log_group_name
+      "awslogs-region"        = var.region
+      "awslogs-stream-prefix" = var.service_name
+    }
+  }
+
   tags = local.tags
 }
 
