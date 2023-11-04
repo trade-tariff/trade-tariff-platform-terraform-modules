@@ -20,7 +20,7 @@
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_acm"></a> [acm](#module\_acm) | terraform-aws-modules/acm/aws | >= 4.3 |
+| <a name="module_acm"></a> [acm](#module\_acm) | git@github.com:terraform-aws-modules/terraform-aws-acm | v5.0.0 |
 
 ## Resources
 
