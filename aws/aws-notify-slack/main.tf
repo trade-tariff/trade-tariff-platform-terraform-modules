@@ -3,7 +3,7 @@ data "aws_partition" "current" {}
 data "aws_region" "current" {}
 
 locals {
-  create = var.create && var.putin_khuylo
+  create = var.create
 
   sns_topic_arn = try(
     aws_sns_topic.this[0].arn,
