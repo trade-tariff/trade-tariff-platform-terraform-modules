@@ -188,3 +188,38 @@ resource "aws_route53_record" "cname_record" {
   zone_id         = var.route53_zone_id
   health_check_id = var.health_check_id
 }
+
+data "aws_s3_bucket" "this" {
+  for_each = { for k, v in var.origin : k => v if v.bucket != null }
+
+  bucket = each.value.bucket
+}
+
+resource "aws_cloudfront_origin_access_identity" "s3_origin" {
+  for_each = { for k, v in var.origin : k => v if v.bucket != null }
+
+  comment = "Origin Access Identity for ${each.value.bucket}"
+}
+
+data "aws_iam_policy_document" "s3_origin" {
+  for_each = { for k, v in var.origin : k => v if v.bucket != null }
+
+  statement {
+    actions = ["s3:GetObject", "s3:ListBucket"]
+    resources = [
+      "${data.aws_s3_bucket.this[each.key].arn}/*",
+      data.aws_s3_bucket.this[each.key].arn
+    ]
+    principals {
+      type        = "AWS"
+      identifiers = [aws_cloudfront_origin_access_identity.s3_origin[each.key].iam_arn]
+    }
+  }
+}
+
+resource "aws_s3_bucket_policy" "s3_origin" {
+  for_each = { for k, v in var.origin : k => v if v.bucket != null }
+
+  bucket = each.value.bucket
+  policy = data.aws_iam_policy_document.s3_origin[each.key].json
+}
