@@ -31,6 +31,13 @@ resource "aws_cloudfront_distribution" "this" {
       origin_id   = lookup(origin.value, "origin_id", origin.key)
       origin_path = lookup(origin.value, "origin_path", null)
 
+      dynamic "s3_origin_config" {
+        for_each = length(lookup(origin.value, "s3_origin_config", "")) == 0 ? [] : [lookup(origin.value, "s3_origin_config", "")]
+        content {
+          origin_access_identity = s3_origin_config.value.origin_access_identity
+        }
+      }
+
       dynamic "custom_origin_config" {
         for_each = length(lookup(origin.value, "custom_origin_config", "")) == 0 ? [] : [lookup(origin.value, "custom_origin_config", "")]
         content {
@@ -187,39 +194,4 @@ resource "aws_route53_record" "cname_record" {
   records         = [aws_cloudfront_distribution.this[0].domain_name]
   zone_id         = var.route53_zone_id
   health_check_id = var.health_check_id
-}
-
-data "aws_s3_bucket" "this" {
-  for_each = { for k, v in var.origin : k => v if v.bucket != null }
-
-  bucket = each.value.bucket
-}
-
-resource "aws_cloudfront_origin_access_identity" "s3_origin" {
-  for_each = { for k, v in var.origin : k => v if v.bucket != null }
-
-  comment = "Origin Access Identity for ${each.value.bucket}"
-}
-
-data "aws_iam_policy_document" "s3_origin" {
-  for_each = { for k, v in var.origin : k => v if v.bucket != null }
-
-  statement {
-    actions = ["s3:GetObject", "s3:ListBucket"]
-    resources = [
-      "${data.aws_s3_bucket.this[each.key].arn}/*",
-      data.aws_s3_bucket.this[each.key].arn
-    ]
-    principals {
-      type        = "AWS"
-      identifiers = [aws_cloudfront_origin_access_identity.s3_origin[each.key].iam_arn]
-    }
-  }
-}
-
-resource "aws_s3_bucket_policy" "s3_origin" {
-  for_each = { for k, v in var.origin : k => v if v.bucket != null }
-
-  bucket = each.value.bucket
-  policy = data.aws_iam_policy_document.s3_origin[each.key].json
 }
