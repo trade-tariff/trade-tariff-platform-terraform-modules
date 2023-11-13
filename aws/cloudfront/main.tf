@@ -27,16 +27,10 @@ resource "aws_cloudfront_distribution" "this" {
     for_each = var.origin
 
     content {
-      domain_name = origin.value.domain_name
-      origin_id   = lookup(origin.value, "origin_id", origin.key)
-      origin_path = lookup(origin.value, "origin_path", null)
-
-      dynamic "s3_origin_config" {
-        for_each = length(lookup(origin.value, "s3_origin_config", "")) == 0 ? [] : [lookup(origin.value, "s3_origin_config", "")]
-        content {
-          origin_access_identity = s3_origin_config.value.origin_access_identity
-        }
-      }
+      domain_name              = origin.value.domain_name
+      origin_id                = lookup(origin.value, "origin_id", origin.key)
+      origin_path              = lookup(origin.value, "origin_path", null)
+      origin_access_control_id = lookup(origin.value, "origin_access_control_id", null)
 
       dynamic "custom_origin_config" {
         for_each = length(lookup(origin.value, "custom_origin_config", "")) == 0 ? [] : [lookup(origin.value, "custom_origin_config", "")]
@@ -124,9 +118,22 @@ resource "aws_cloudfront_distribution" "this" {
       target_origin_id       = i.value["target_origin_id"]
       viewer_protocol_policy = i.value["viewer_protocol_policy"]
 
-      allowed_methods           = lookup(i.value, "allowed_methods", ["GET", "HEAD", "OPTIONS"])
-      cached_methods            = lookup(i.value, "cached_methods", ["GET", "HEAD"])
-      compress                  = lookup(i.value, "compress", null)
+      allowed_methods = lookup(i.value, "allowed_methods", ["GET", "HEAD", "OPTIONS"])
+      cached_methods  = lookup(i.value, "cached_methods", ["GET", "HEAD"])
+      compress        = lookup(i.value, "compress", null)
+
+      forwarded_values {
+        query_string = lookup(i.value, "query_string", null)
+
+        cookies {
+          forward           = lookup(i.value, "cookies_forward", "none")
+          whitelisted_names = lookup(i.value, "cookies_whitelisted_names", [])
+        }
+
+        headers                 = lookup(i.value, "headers", [])
+        query_string_cache_keys = lookup(i.value, "query_string_cache_keys", [])
+      }
+
       field_level_encryption_id = lookup(i.value, "field_level_encryption_id", null)
       smooth_streaming          = lookup(i.value, "smooth_streaming", null)
       trusted_signers           = lookup(i.value, "trusted_signers", null)
