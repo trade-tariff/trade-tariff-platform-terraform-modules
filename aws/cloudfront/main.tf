@@ -122,18 +122,6 @@ resource "aws_cloudfront_distribution" "this" {
       cached_methods  = lookup(i.value, "cached_methods", ["GET", "HEAD"])
       compress        = lookup(i.value, "compress", null)
 
-      forwarded_values {
-        query_string = lookup(i.value, "query_string", null)
-
-        cookies {
-          forward           = lookup(i.value, "cookies_forward", "none")
-          whitelisted_names = lookup(i.value, "cookies_whitelisted_names", [])
-        }
-
-        headers                 = lookup(i.value, "headers", [])
-        query_string_cache_keys = lookup(i.value, "query_string_cache_keys", [])
-      }
-
       field_level_encryption_id = lookup(i.value, "field_level_encryption_id", null)
       smooth_streaming          = lookup(i.value, "smooth_streaming", null)
       trusted_signers           = lookup(i.value, "trusted_signers", null)
