@@ -96,6 +96,16 @@ resource "aws_cloudfront_distribution" "this" {
       cache_policy_id          = i.value["cache_policy_id"]
       origin_request_policy_id = i.value["origin_request_policy_id"]
 
+      dynamic "function_association" {
+        for_each = lookup(i.value, "function_association", [])
+        iterator = "f"
+
+        content {
+          event_type   = f.key
+          function_arn = f.value.function_arn
+        }
+      }
+
       dynamic "lambda_function_association" {
         for_each = lookup(i.value, "lambda_function_association", [])
         iterator = l
@@ -132,6 +142,27 @@ resource "aws_cloudfront_distribution" "this" {
 
       cache_policy_id          = i.value["cache_policy_id"]
       origin_request_policy_id = i.value["origin_request_policy_id"]
+
+      dynamic "function_association" {
+        for_each = lookup(i.value, "function_association", [])
+        iterator = "f"
+
+        content {
+          event_type   = f.key
+          function_arn = f.value.function_arn
+        }
+      }
+
+      dynamic "lambda_function_association" {
+        for_each = lookup(i.value, "lambda_function_association", [])
+        iterator = l
+
+        content {
+          event_type   = l.key
+          lambda_arn   = l.value.lambda_arn
+          include_body = lookup(l.value, "include_body", null)
+        }
+      }
     }
   }
 

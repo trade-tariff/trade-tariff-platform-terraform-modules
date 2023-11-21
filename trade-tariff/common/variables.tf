@@ -11,12 +11,6 @@ variable "environments" {
   default     = ["development", "staging", "production"]
 }
 
-variable "notification_email" {
-  type        = string
-  description = "Email address from where to send worker reports"
-  #  default = "no-reply@trade-tariff.service.gov.uk"
-  default = "trade-tariff-support@enginegroup.com"
-}
 
 
 variable "docker_repositories" {

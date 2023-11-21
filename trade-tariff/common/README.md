@@ -87,7 +87,6 @@ No modules.
 |------|-------------|------|---------|:--------:|
 | <a name="input_docker_repositories"></a> [docker\_repositories](#input\_docker\_repositories) | List of repositories to create | `list(string)` | <pre>[<br>  "tariff-backend",<br>  "tariff-frontend",<br>  "tariff-dutycalculator",<br>  "tariff-admin",<br>  "tariff-search-query-parser",<br>  "signon"<br>]</pre> | no |
 | <a name="input_environments"></a> [environments](#input\_environments) | list of environment name keys to use in environment interpolations | `list(any)` | <pre>[<br>  "development",<br>  "staging",<br>  "production"<br>]</pre> | no |
-| <a name="input_notification_email"></a> [notification\_email](#input\_notification\_email) | Email address from where to send worker reports | `string` | `"trade-tariff-support@enginegroup.com"` | no |
 | <a name="input_project-key"></a> [project-key](#input\_project-key) | The project key to use in prefixing resources | `string` | `"trade-tariff"` | no |
 
 ## Outputs
