@@ -98,7 +98,7 @@ resource "aws_cloudfront_distribution" "this" {
 
       dynamic "function_association" {
         for_each = lookup(i.value, "function_association", [])
-        iterator = "f"
+        iterator = f
 
         content {
           event_type   = f.key
@@ -145,7 +145,7 @@ resource "aws_cloudfront_distribution" "this" {
 
       dynamic "function_association" {
         for_each = lookup(i.value, "function_association", [])
-        iterator = "f"
+        iterator = f
 
         content {
           event_type   = f.key
