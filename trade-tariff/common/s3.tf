@@ -110,7 +110,7 @@ resource "aws_s3_bucket_public_access_block" "database-backups" {
 
 resource "aws_s3_bucket_public_access_block" "persistence" {
   count  = length(aws_s3_bucket.persistence)
-  bucket = aws_s3_bucket.persistence.*.id[count.index]
+  bucket = aws_s3_bucket.persistence[*].id[count.index]
 
   restrict_public_buckets = true
   block_public_acls       = true
@@ -120,7 +120,7 @@ resource "aws_s3_bucket_public_access_block" "persistence" {
 
 resource "aws_s3_bucket_public_access_block" "opensearch-packages" {
   count  = length(aws_s3_bucket.opensearch_packages)
-  bucket = aws_s3_bucket.opensearch_packages.*.id[count.index]
+  bucket = aws_s3_bucket.opensearch_packages[*].id[count.index]
 
   restrict_public_buckets = true
   block_public_acls       = true
@@ -130,7 +130,7 @@ resource "aws_s3_bucket_public_access_block" "opensearch-packages" {
 
 resource "aws_s3_bucket_public_access_block" "search-configuration" {
   count  = length(aws_s3_bucket.search_configuration)
-  bucket = aws_s3_bucket.search_configuration.*.id[count.index]
+  bucket = aws_s3_bucket.search_configuration[*].id[count.index]
 
   restrict_public_buckets = true
   block_public_acls       = true
