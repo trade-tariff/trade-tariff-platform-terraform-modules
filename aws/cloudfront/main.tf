@@ -93,8 +93,9 @@ resource "aws_cloudfront_distribution" "this" {
       default_ttl = lookup(i.value, "default_ttl", null)
       max_ttl     = lookup(i.value, "max_ttl", null)
 
-      cache_policy_id          = i.value["cache_policy_id"]
-      origin_request_policy_id = i.value["origin_request_policy_id"]
+      cache_policy_id            = i.value["cache_policy_id"]
+      origin_request_policy_id   = i.value["origin_request_policy_id"]
+      response_headers_policy_id = i.value["response_headers_policy_id"]
 
       dynamic "function_association" {
         for_each = lookup(i.value, "function_association", [])
@@ -140,8 +141,9 @@ resource "aws_cloudfront_distribution" "this" {
       default_ttl = lookup(i.value, "default_ttl", null)
       max_ttl     = lookup(i.value, "max_ttl", null)
 
-      cache_policy_id          = i.value["cache_policy_id"]
-      origin_request_policy_id = i.value["origin_request_policy_id"]
+      cache_policy_id            = i.value["cache_policy_id"]
+      origin_request_policy_id   = i.value["origin_request_policy_id"]
+      response_headers_policy_id = i.value["response_headers_policy_id"]
 
       dynamic "function_association" {
         for_each = lookup(i.value, "function_association", [])
