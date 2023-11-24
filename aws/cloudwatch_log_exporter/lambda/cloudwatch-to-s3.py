@@ -76,5 +76,3 @@ def lambda_handler(event, context):
             except Exception as e:
                 print("    Error exporting %s: %s" % (log_group_name, getattr(e, 'message', repr(e))))
                 break
-
-        
