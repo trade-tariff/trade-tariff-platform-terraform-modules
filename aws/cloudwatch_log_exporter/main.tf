@@ -125,4 +125,3 @@ resource "aws_lambda_permission" "log_exporter" {
   principal     = "events.amazonaws.com"
   source_arn    = aws_cloudwatch_event_rule.log_exporter.arn
 }
-
