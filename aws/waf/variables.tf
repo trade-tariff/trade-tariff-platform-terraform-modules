@@ -20,7 +20,7 @@ variable "managed_rules" {
   default = {
     AWSManagedRulesCommonRuleSet = {
       priority        = 10
-      override_action = "allow"
+      override_action = "none"
       excluded_rules  = ["NoUserAgent_HEADER"]
     },
     AWSManagedRulesAmazonIpReputationList = {
@@ -35,7 +35,7 @@ variable "managed_rules" {
     },
     AWSManagedRulesSQLiRuleSet = {
       priority        = 40
-      override_action = "allow"
+      override_action = "none"
       excluded_rules  = ["SQLi_QUERYARGUMENTS"]
     },
     AWSManagedRulesLinuxRuleSet = {
