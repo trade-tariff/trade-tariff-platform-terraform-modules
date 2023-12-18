@@ -21,7 +21,7 @@ variable "managed_rules" {
     AWSManagedRulesCommonRuleSet = {
       priority        = 10
       override_action = "none"
-      excluded_rules  = ["NoUserAgent_HEADER"]
+      excluded_rules  = ["NoUserAgent_HEADER", "SizeRestrictions_BODY"]
     },
     AWSManagedRulesAmazonIpReputationList = {
       priority        = 20
