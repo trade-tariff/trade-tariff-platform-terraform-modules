@@ -31,7 +31,7 @@ locals {
     {
       name        = var.service_name
       image       = "${var.docker_image}:${var.docker_tag}"
-      essential   = true
+      essential   = false
       environment = var.service_environment_config
       secrets     = var.service_secrets_config
       entryPoint  = var.container_entrypoint
@@ -53,7 +53,7 @@ locals {
 
       dependsOn = [{
         containerName = "${var.service_name}-init"
-        condition     = "COMPLETE"
+        condition     = "SUCCESS"
       }]
     }
   ]
