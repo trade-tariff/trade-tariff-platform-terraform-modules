@@ -47,6 +47,12 @@ resource "aws_ecs_service" "this" {
 
   lifecycle {
     ignore_changes = [desired_count]
+
+    # https://github.com/hashicorp/terraform-provider-aws/issues/19519#issuecomment-1648426533
+    postcondition {
+      condition     = self.task_definition == aws_ecs_task_definition.this.arn
+      error_message = "The service did not reach the steady state at the requested version."
+    }
   }
 
   tags = local.tags
@@ -109,63 +115,6 @@ resource "aws_service_discovery_service" "this" {
     dns_records {
       ttl  = 10
       type = "A"
-    }
-  }
-}
-
-resource "aws_codedeploy_app" "this" {
-  count            = var.enable_blue_green ? 1 : 0
-  compute_platform = "ECS"
-  name             = var.service_name
-  tags             = local.tags
-}
-
-resource "aws_codedeploy_deployment_group" "this" {
-  count                  = var.enable_blue_green ? 1 : 0
-  app_name               = aws_codedeploy_app.this[0].name
-  deployment_config_name = var.deployment_configuration
-  deployment_group_name  = var.service_name
-  service_role_arn       = aws_iam_role.execution_role.arn
-
-  auto_rollback_configuration {
-    enabled = true
-    events  = ["DEPLOYMENT_FAILURE"]
-  }
-
-  blue_green_deployment_config {
-    deployment_ready_option {
-      action_on_timeout = "CONTINUE_DEPLOYMENT"
-    }
-
-    terminate_blue_instances_on_deployment_success {
-      action                           = "TERMINATE"
-      termination_wait_time_in_minutes = 1
-    }
-  }
-
-  deployment_style {
-    deployment_option = "WITH_TRAFFIC_CONTROL"
-    deployment_type   = "BLUE_GREEN"
-  }
-
-  ecs_service {
-    cluster_name = data.aws_ecs_cluster.this.cluster_name
-    service_name = aws_ecs_service.this.name
-  }
-
-  load_balancer_info {
-    target_group_pair_info {
-      prod_traffic_route {
-        listener_arns = [var.listener_arn]
-      }
-
-      target_group {
-        name = var.blue_target_group_name
-      }
-
-      target_group {
-        name = var.green_target_group_name
-      }
     }
   }
 }
