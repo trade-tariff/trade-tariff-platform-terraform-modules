@@ -128,6 +128,7 @@ No modules.
 |------|-------------|
 | <a name="output_client_id"></a> [client\_id](#output\_client\_id) | n/a |
 | <a name="output_cloudfront_distribution_arn"></a> [cloudfront\_distribution\_arn](#output\_cloudfront\_distribution\_arn) | n/a |
+| <a name="output_cloudfront_distribution_zone_id"></a> [cloudfront\_distribution\_zone\_id](#output\_cloudfront\_distribution\_zone\_id) | n/a |
 | <a name="output_domain"></a> [domain](#output\_domain) | n/a |
 | <a name="output_user_pool_arn"></a> [user\_pool\_arn](#output\_user\_pool\_arn) | n/a |
 | <a name="output_user_pool_id"></a> [user\_pool\_id](#output\_user\_pool\_id) | n/a |

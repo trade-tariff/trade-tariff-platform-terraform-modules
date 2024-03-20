@@ -17,3 +17,7 @@ output "domain" {
 output "cloudfront_distribution_arn" {
   value = aws_cognito_user_pool_domain.this[0].cloudfront_distribution_arn
 }
+
+output "cloudfront_distribution_zone_id" {
+  value = aws_cognito_user_pool_domain.this[0].cloudfront_distribution_zone_id
+}
