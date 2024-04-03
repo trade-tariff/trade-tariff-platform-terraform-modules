@@ -392,3 +392,24 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "resource_server_name" {
+  type        = string
+  description = "Name of the resource server. Leave blank to not create resource server (default)."
+  default     = null
+}
+
+variable "resource_server_identifier" {
+  type        = string
+  description = "Identifier of the resource server."
+  default     = null
+}
+
+variable "resource_server_scopes" {
+  type = list(object({
+    scope_name        = string
+    scope_description = string
+  }))
+  description = "List of scopes for resource server."
+  default     = null
+}

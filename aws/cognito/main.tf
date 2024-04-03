@@ -212,3 +212,18 @@ resource "aws_cognito_user_pool_client" "this" {
     refresh_token = "days"
   }
 }
+
+resource "aws_cognito_resource_server" "this" {
+  count        = var.resource_server_name != null ? 1 : 0
+  name         = var.resource_server_name
+  identifier   = var.resource_server_identifier
+  user_pool_id = aws_cognito_user_pool.this.id
+
+  dynamic "scope" {
+    for_each = toset(var.resource_server_scopes)
+    content {
+      scope_name        = scope.value.scope_name
+      scope_description = scope.value.scope_description
+    }
+  }
+}
