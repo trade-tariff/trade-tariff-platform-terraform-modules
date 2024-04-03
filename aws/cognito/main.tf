@@ -183,7 +183,7 @@ resource "aws_cognito_user_pool_client" "this" {
 
   allowed_oauth_flows                  = var.client_oauth_grant_types
   allowed_oauth_flows_user_pool_client = var.client_oauth_flow_allowed
-  allowed_oauth_scopes                 = var.client_oauth_scopes
+  allowed_oauth_scopes                 = var.resource_server_name != null ? aws_cognito_resource_server.this.scope_identifiers : var.client_oauth_scopes
 
   enable_token_revocation                       = var.client_enable_token_revocation
   enable_propagate_additional_user_context_data = var.client_propagate_user_data
@@ -210,5 +210,20 @@ resource "aws_cognito_user_pool_client" "this" {
     access_token  = "hours"
     id_token      = "hours"
     refresh_token = "days"
+  }
+}
+
+resource "aws_cognito_resource_server" "this" {
+  count        = var.resource_server_name != null ? 1 : 0
+  name         = var.resource_server_name
+  identifier   = var.resource_server_identifier
+  user_pool_id = aws_cognito_user_pool.this.id
+
+  dynamic "scope" {
+    for_each = toset(var.resource_server_scopes)
+    content {
+      scope_name        = scope.value.scope_name
+      scope_description = scope.value.scope_description
+    }
   }
 }

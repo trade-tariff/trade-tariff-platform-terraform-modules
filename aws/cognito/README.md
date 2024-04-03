@@ -45,8 +45,8 @@ resource "aws_route53_record" "cognito_custom_domain" {
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 5.0 |
-| <a name="provider_null"></a> [null](#provider\_null) | >= 3.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.43.0 |
+| <a name="provider_null"></a> [null](#provider\_null) | 3.2.2 |
 
 ## Modules
 
@@ -56,6 +56,7 @@ No modules.
 
 | Name | Type |
 |------|------|
+| [aws_cognito_resource_server.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cognito_resource_server) | resource |
 | [aws_cognito_user_pool.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cognito_user_pool) | resource |
 | [aws_cognito_user_pool_client.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cognito_user_pool_client) | resource |
 | [aws_cognito_user_pool_domain.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cognito_user_pool_domain) | resource |
@@ -114,6 +115,9 @@ No modules.
 | <a name="input_pool_name"></a> [pool\_name](#input\_pool\_name) | Name of the user pool. | `string` | n/a | yes |
 | <a name="input_recovery_mechanisms"></a> [recovery\_mechanisms](#input\_recovery\_mechanisms) | List of account recovery options objects. | <pre>list(object({<br>    name     = string<br>    priority = number<br>  }))</pre> | <pre>[<br>  {<br>    "name": "verified_email",<br>    "priority": 1<br>  }<br>]</pre> | no |
 | <a name="input_reply_to_email_address"></a> [reply\_to\_email\_address](#input\_reply\_to\_email\_address) | Reply-to email address. | `string` | `null` | no |
+| <a name="input_resource_server_identifier"></a> [resource\_server\_identifier](#input\_resource\_server\_identifier) | Identifier of the resource server. | `string` | `null` | no |
+| <a name="input_resource_server_name"></a> [resource\_server\_name](#input\_resource\_server\_name) | Name of the resource server. Leave blank to not create resource server (default). | `string` | `null` | no |
+| <a name="input_resource_server_scopes"></a> [resource\_server\_scopes](#input\_resource\_server\_scopes) | List of scopes for resource server. | <pre>list(object({<br>    scope_name        = string<br>    scope_description = string<br>  }))</pre> | `null` | no |
 | <a name="input_schemata"></a> [schemata](#input\_schemata) | List of schema objects. | `any` | `null` | no |
 | <a name="input_ses_identity_source_arn"></a> [ses\_identity\_source\_arn](#input\_ses\_identity\_source\_arn) | ARN of the SES verified email identity to use - required if using SES. | `string` | `null` | no |
 | <a name="input_sms_authentication_message"></a> [sms\_authentication\_message](#input\_sms\_authentication\_message) | String to use as the SMS authentication message. Must contain '{####}' placeholder. | `string` | `"Your temporary password is {####}."` | no |
@@ -127,9 +131,11 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_client_id"></a> [client\_id](#output\_client\_id) | n/a |
+| <a name="output_client_secret"></a> [client\_secret](#output\_client\_secret) | n/a |
 | <a name="output_cloudfront_distribution_arn"></a> [cloudfront\_distribution\_arn](#output\_cloudfront\_distribution\_arn) | n/a |
 | <a name="output_cloudfront_distribution_zone_id"></a> [cloudfront\_distribution\_zone\_id](#output\_cloudfront\_distribution\_zone\_id) | n/a |
 | <a name="output_domain"></a> [domain](#output\_domain) | n/a |
 | <a name="output_user_pool_arn"></a> [user\_pool\_arn](#output\_user\_pool\_arn) | n/a |
 | <a name="output_user_pool_id"></a> [user\_pool\_id](#output\_user\_pool\_id) | n/a |
+| <a name="output_user_pool_public_keys_url"></a> [user\_pool\_public\_keys\_url](#output\_user\_pool\_public\_keys\_url) | n/a |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
