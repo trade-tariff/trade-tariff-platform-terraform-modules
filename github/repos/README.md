@@ -36,7 +36,7 @@ No modules.
 | <a name="input_admin_teams"></a> [admin\_teams](#input\_admin\_teams) | n/a | `list(any)` | `[]` | no |
 | <a name="input_allow_push_to_main"></a> [allow\_push\_to\_main](#input\_allow\_push\_to\_main) | n/a | `string` | `"true"` | no |
 | <a name="input_allow_rebase_merge"></a> [allow\_rebase\_merge](#input\_allow\_rebase\_merge) | n/a | `bool` | `false` | no |
-| <a name="input_allow_squash_merge"></a> [allow\_squash\_merge](#input\_allow\_squash\_merge) | n/a | `bool` | `true` | no |
+| <a name="input_allow_squash_merge"></a> [allow\_squash\_merge](#input\_allow\_squash\_merge) | n/a | `bool` | `false` | no |
 | <a name="input_archived"></a> [archived](#input\_archived) | n/a | `bool` | `false` | no |
 | <a name="input_default_branch_name"></a> [default\_branch\_name](#input\_default\_branch\_name) | n/a | `string` | `"main"` | no |
 | <a name="input_delete_branch_on_merge"></a> [delete\_branch\_on\_merge](#input\_delete\_branch\_on\_merge) | n/a | `bool` | `true` | no |
