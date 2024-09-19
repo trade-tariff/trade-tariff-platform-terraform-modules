@@ -58,7 +58,7 @@ variable "recovery_mechanisms" {
 variable "allow_user_registration" {
   description = "Whether users can sign themselves up. If false, only the administrator can create user profiles."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "invite_message_template" {

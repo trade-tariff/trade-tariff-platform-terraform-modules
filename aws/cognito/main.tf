@@ -27,7 +27,7 @@ resource "aws_cognito_user_pool" "this" {
   }
 
   admin_create_user_config {
-    allow_admin_create_user_only = var.allow_user_registration ? false : true
+    allow_admin_create_user_only = var.allow_user_registration
     dynamic "invite_message_template" {
       for_each = var.invite_message_template != null ? [var.invite_message_template] : []
       content {
