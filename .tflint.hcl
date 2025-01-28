@@ -2,7 +2,6 @@ config {
   format        = "compact"
   ignore_module = {}
   varfile       = []
-  module        = true
 }
 
 plugin "terraform" {

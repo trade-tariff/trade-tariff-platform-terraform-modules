@@ -1,6 +1,6 @@
 # teams
 
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -34,7 +34,7 @@ No modules.
 | <a name="input_parent_team_description"></a> [parent\_team\_description](#input\_parent\_team\_description) | The description of the parent team. | `string` | `""` | no |
 | <a name="input_parent_team_name"></a> [parent\_team\_name](#input\_parent\_team\_name) | The name of the parent team. | `string` | n/a | yes |
 | <a name="input_privacy"></a> [privacy](#input\_privacy) | The level of privacy for the team. Must be one of secret or closed. | `string` | `"secret"` | no |
-| <a name="input_sub_teams"></a> [sub\_teams](#input\_sub\_teams) | A list of sub teams to add to the parent team/ | `set(string)` | n/a | yes |
+| <a name="input_sub_teams"></a> [sub\_teams](#input\_sub\_teams) | A list of sub teams to add to the parent team. | `set(string)` | `null` | no |
 
 ## Outputs
 
@@ -42,4 +42,4 @@ No modules.
 |------|-------------|
 | <a name="output_id"></a> [id](#output\_id) | n/a |
 | <a name="output_teams"></a> [teams](#output\_teams) | n/a |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->
