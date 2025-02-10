@@ -5,14 +5,14 @@ variable "description" {
 }
 
 variable "privacy" {
-  description = "The level of privacy for the team. Must be one of secret or closed."
+  description = "The level of privacy for the team. Must be one of `secret` or `closed`."
   type        = string
   default     = "secret"
 }
 
 variable "sub_teams" {
   description = "A list of sub teams to add to the parent team."
-  type        = set(string)
+  type        = set(any)
   default     = null
 }
 
