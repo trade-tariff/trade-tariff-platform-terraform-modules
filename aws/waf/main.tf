@@ -145,9 +145,9 @@ resource "aws_wafv2_web_acl" "this" {
 
       statement {
         rate_based_statement {
-          limit              = rule.value.rpm_limit * 5
-          aggregate_key_type = "IP"
-
+          limit                 = rule.value.rpm_limit
+          evaluation_window_sec = 60
+          aggregate_key_type    = "IP"
         }
       }
 
