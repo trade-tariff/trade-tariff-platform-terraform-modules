@@ -32,7 +32,7 @@ resource "aws_route53_record" "cognito_custom_domain" {
 
 ---
 
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -138,4 +138,4 @@ No modules.
 | <a name="output_user_pool_arn"></a> [user\_pool\_arn](#output\_user\_pool\_arn) | n/a |
 | <a name="output_user_pool_id"></a> [user\_pool\_id](#output\_user\_pool\_id) | n/a |
 | <a name="output_user_pool_public_keys_url"></a> [user\_pool\_public\_keys\_url](#output\_user\_pool\_public\_keys\_url) | n/a |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->
