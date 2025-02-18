@@ -26,3 +26,6 @@ module "example_cloudfront" {
 module "example_acm" {
 
 }
+
+
+Test if lifecucle config applied
