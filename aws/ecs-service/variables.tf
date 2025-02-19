@@ -114,11 +114,11 @@ variable "autoscaling_metrics" {
   default = {
     cpu = {
       metric_type  = "ECSServiceAverageCPUUtilization"
-      target_value = 50
+      target_value = 40
     },
     memory = {
       metric_type  = "ECSServiceAverageMemoryUtilization"
-      target_value = 50
+      target_value = 40
     }
   }
 }
