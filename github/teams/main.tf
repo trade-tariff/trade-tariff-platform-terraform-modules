@@ -5,7 +5,7 @@ resource "github_team" "parent_team" {
 }
 
 resource "github_team" "this" {
-  for_each                  = var.sub_teams
+  for_each                  = toset(var.sub_teams != null ? var.sub_teams : [])
   name                      = each.value
   description               = var.description
   privacy                   = var.privacy

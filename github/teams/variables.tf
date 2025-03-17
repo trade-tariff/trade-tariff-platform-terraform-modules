@@ -12,7 +12,7 @@ variable "privacy" {
 
 variable "sub_teams" {
   description = "A list of sub teams to add to the parent team."
-  type        = set(any)
+  type        = list(string)
   default     = null
 }
 

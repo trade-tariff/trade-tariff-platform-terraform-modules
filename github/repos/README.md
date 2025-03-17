@@ -1,18 +1,18 @@
 # repos
 
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.1.7 |
-| <a name="requirement_github"></a> [github](#requirement\_github) | >= 4.23.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0 |
+| <a name="requirement_github"></a> [github](#requirement\_github) | >= 6.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_github"></a> [github](#provider\_github) | >= 4.23.0 |
+| <a name="provider_github"></a> [github](#provider\_github) | 6.2.3 |
 
 ## Modules
 
@@ -67,4 +67,4 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_repo_node_id"></a> [repo\_node\_id](#output\_repo\_node\_id) | n/a |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->
