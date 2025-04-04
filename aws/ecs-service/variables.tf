@@ -206,9 +206,3 @@ variable "init_container_command" {
   type        = list(string)
   default     = null
 }
-
-variable "multi_az" {
-  description = "Whether to enable availability zone rebalancing (requires multiple subnets to be passed to the service, and a service count above 1). Defaults to `true`."
-  type        = bool
-  default     = true
-}
