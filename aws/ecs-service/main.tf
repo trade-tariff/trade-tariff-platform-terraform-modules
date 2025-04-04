@@ -35,14 +35,6 @@ resource "aws_ecs_service" "this" {
     rollback = var.enable_rollback
   }
 
-  dynamic "ordered_placement_strategy" {
-    for_each = var.multi_az ? [true] : []
-    content {
-      type  = "spread"
-      field = "attribute:ecs.availability-zone"
-    }
-  }
-
   deployment_maximum_percent         = var.deployment_maximum_percent
   deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
   wait_for_steady_state              = var.wait_for_steady_state
