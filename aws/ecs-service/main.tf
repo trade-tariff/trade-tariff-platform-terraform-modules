@@ -79,6 +79,27 @@ resource "aws_ecs_task_definition" "this" {
   tags = local.tags
 }
 
+resource "aws_ecs_task_definition" "job" {
+  family                   = "${var.service_name}-${local.account_id}"
+  network_mode             = "awsvpc"
+  execution_role_arn       = aws_iam_role.ecs_execution_role.arn
+  task_role_arn            = aws_iam_role.ecs_task_role.arn
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = var.cpu
+  memory                   = var.memory
+
+  container_definitions = jsonencode([local.job_container_definition])
+
+
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = "X86_64"
+  }
+
+  tags = local.tags
+}
+
+
 resource "aws_appautoscaling_target" "this" {
   max_capacity       = var.max_capacity
   min_capacity       = var.min_capacity
