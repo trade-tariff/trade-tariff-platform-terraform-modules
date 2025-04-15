@@ -83,21 +83,21 @@ locals {
   }]
 
   job_container_definitions = [{
-      name        = var.service_name
-      image       = "${var.docker_image}:${var.docker_tag}"
-      essential   = true
-      command     = var.container_command
-      environment = var.service_environment_config
-      secrets     = var.service_secrets_config
+    name        = var.service_name
+    image       = "${var.docker_image}:${var.docker_tag}"
+    essential   = true
+    command     = var.container_command
+    environment = var.service_environment_config
+    secrets     = var.service_secrets_config
 
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          awslogs-region        = var.region
-          awslogs-stream-prefix = "ecs"
-          awslogs-group         = data.aws_cloudwatch_log_group.this.name
-        }
+    logConfiguration = {
+      logDriver = "awslogs"
+      options = {
+        awslogs-region        = var.region
+        awslogs-stream-prefix = "ecs"
+        awslogs-group         = data.aws_cloudwatch_log_group.this.name
       }
+    }
   }]
 }
 
