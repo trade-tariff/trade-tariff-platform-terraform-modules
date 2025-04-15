@@ -80,7 +80,7 @@ resource "aws_ecs_task_definition" "this" {
 }
 
 resource "aws_ecs_task_definition" "job" {
-  count = var.create_job_task ? 1 : 0
+  count                    = var.create_job_task ? 1 : 0
   family                   = var.service_name
   network_mode             = "awsvpc"
   execution_role_arn       = aws_iam_role.ecs_execution_role.arn
