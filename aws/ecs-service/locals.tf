@@ -82,7 +82,7 @@ locals {
     }
   }]
 
-  job_container_definitions = [{
+  job_container_definition = [{
     name        = var.service_name
     image       = "${var.docker_image}:${var.docker_tag}"
     essential   = true
