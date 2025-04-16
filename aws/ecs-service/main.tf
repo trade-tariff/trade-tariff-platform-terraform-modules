@@ -83,8 +83,8 @@ resource "aws_ecs_task_definition" "job" {
   count                    = var.create_job_task ? 1 : 0
   family                   = var.service_name
   network_mode             = "awsvpc"
-  execution_role_arn       = aws_iam_role.ecs_execution_role.arn
-  task_role_arn            = aws_iam_role.ecs_task_role.arn
+  execution_role_arn       = aws_iam_role.execution_role.arn
+  task_role_arn            = aws_iam_role.task_role.arn
   requires_compatibilities = ["FARGATE"]
   cpu                      = var.cpu
   memory                   = var.memory
