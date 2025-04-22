@@ -206,3 +206,9 @@ variable "init_container_command" {
   type        = list(string)
   default     = null
 }
+
+variable "create_job_task" {
+  description = "Whether to create a job task. Defaults to `false`."
+  type        = bool
+  default     = false
+}
