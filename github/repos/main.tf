@@ -92,3 +92,11 @@ resource "github_branch_protection" "repo_protect_main" {
     require_code_owner_reviews      = var.require_code_owner_reviews
   }
 }
+
+resource "github_branch_protection" "global_main" {
+  repository_id = github_repository.repo.node_id
+  pattern       = var.default_branch_name
+
+  # NOTE: This will force the feature branch to be up-to-date with the main branch
+  required_status_checks { strict = true }
+}
