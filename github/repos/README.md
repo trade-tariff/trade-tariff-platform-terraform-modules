@@ -12,7 +12,7 @@
 
 | Name | Version |
 |------|---------|
-| <a name="provider_github"></a> [github](#provider\_github) | >= 6.0 |
+| <a name="provider_github"></a> [github](#provider\_github) | 6.6.0 |
 
 ## Modules
 
@@ -22,6 +22,7 @@ No modules.
 
 | Name | Type |
 |------|------|
+| [github_branch_protection.global_main](https://registry.terraform.io/providers/integrations/github/latest/docs/resources/branch_protection) | resource |
 | [github_branch_protection.repo_protect_main](https://registry.terraform.io/providers/integrations/github/latest/docs/resources/branch_protection) | resource |
 | [github_repository.repo](https://registry.terraform.io/providers/integrations/github/latest/docs/resources/repository) | resource |
 | [github_team_repository.repo_team_admin](https://registry.terraform.io/providers/integrations/github/latest/docs/resources/team_repository) | resource |
