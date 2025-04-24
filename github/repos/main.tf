@@ -94,6 +94,8 @@ resource "github_branch_protection" "repo_protect_main" {
 }
 
 resource "github_branch_protection" "global_main" {
+  count = var.allow_push_to_main ? 1 : 0
+
   repository_id = github_repository.repo.node_id
   pattern       = var.default_branch_name
 
