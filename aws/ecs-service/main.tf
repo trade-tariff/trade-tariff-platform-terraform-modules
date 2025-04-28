@@ -89,7 +89,7 @@ resource "aws_ecs_task_definition" "job" {
   cpu                      = var.cpu
   memory                   = var.memory
 
-  container_definitions = jsonencode([local.job_container_definition])
+  container_definitions = jsonencode(local.job_container_definition)
 
 
   runtime_platform {
