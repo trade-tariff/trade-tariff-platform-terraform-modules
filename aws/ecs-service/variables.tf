@@ -201,14 +201,13 @@ variable "init_container_command" {
 
 variable "container_definition_kind" {
   description = <<EOT
-  The kind of task to run. Can be either `db-backed` or `task` or 'web'. Defaults to `web`.\n
-  `db-backed` - A task that is backed by a database and typically drives database migrations.
-  `job` - A task that runs any arbitrary job with the priveleges of the task role and stops.
-  `web` - A task that runs a web service and is backed by a load balancer.
+  The kind of task to run.
 
-  This will pick the appropriate container definition for the task.
+  Can be either `db-backed` or `job` or `web`. Defaults to `web`.
 
-  Feel free to override init_command for the db-backed container and container_command for the web and job container.
+  - `db-backed` - A task that is backed by a database and typically drives database migrations.
+  - `job` - A task that runs any arbitrary job with the priveleges of the task role and stops.
+  - `web` - A task that runs a web service and is backed by a load balancer.
   EOT
   type        = string
   default     = "web"

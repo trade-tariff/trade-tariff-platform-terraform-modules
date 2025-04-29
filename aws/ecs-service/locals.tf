@@ -12,9 +12,9 @@ locals {
   actual_container_definition = jsonencode(locals.container_definition_kinds[var.container_definition_kind])
 
   container_definition_kinds = {
-    "task"      = local.job_container_definition
-    "service"   = local.container_definition
+    "web"       = local.container_definition
     "db-backed" = local.init_container_definition
+    "job"       = local.job_container_definition
   }
 
   init_container_definition = [
