@@ -9,7 +9,7 @@ locals {
     var.tags,
   )
 
-  actual_container_definition = jsonencode(locals.container_definition_kinds[var.container_definition_kind])
+  actual_container_definition = jsonencode(local.container_definition_kinds[var.container_definition_kind])
 
   container_definition_kinds = {
     "web"       = local.container_definition
