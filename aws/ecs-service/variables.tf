@@ -187,14 +187,6 @@ variable "enable_rollback" {
   default     = true
 }
 
-### Init Container
-
-variable "init_container" {
-  description = "Whether to use an init container."
-  type        = bool
-  default     = false
-}
-
 variable "init_container_entrypoint" {
   description = "String array representing the entrypoint of the init container. Supply to override the Dockerfile. Defaults to `null`, that is, not overriding the Dockerfile."
   type        = list(string)
@@ -207,8 +199,16 @@ variable "init_container_command" {
   default     = null
 }
 
-variable "create_job_task" {
-  description = "Whether to create a job task. Defaults to `false`."
-  type        = bool
-  default     = false
+variable "container_definition_kind" {
+  description = <<EOT
+  The kind of task to run.
+
+  Can be either `db-backed` or `job` or `web`. Defaults to `web`.
+
+  - `db-backed` - A task that is backed by a database and typically drives database migrations.
+  - `job` - A task that runs any arbitrary job with the priveleges of the task role and stops.
+  - `web` - A task that runs a web service and is backed by a load balancer.
+  EOT
+  type        = string
+  default     = "web"
 }

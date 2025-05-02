@@ -9,6 +9,14 @@ locals {
     var.tags,
   )
 
+  actual_container_definition = jsonencode(local.container_definition_kinds[var.container_definition_kind])
+
+  container_definition_kinds = {
+    "web"       = local.container_definition
+    "db-backed" = local.init_container_definition
+    "job"       = local.job_container_definition
+  }
+
   init_container_definition = [
     {
       name        = "${var.service_name}-init"
