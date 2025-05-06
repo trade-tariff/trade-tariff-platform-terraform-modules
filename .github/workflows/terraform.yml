@@ -7,10 +7,12 @@ on:
 jobs:
   fmt_validate_terraform:
     runs-on: ubuntu-latest
-    container:
-      image: hashicorp/terraform:1.11
+  
     steps:
     - uses: actions/checkout@v4.1.0
+    - uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.11
     - name: terraform init
       run: |
         cd github
