@@ -1,7 +1,6 @@
 locals {
   account_id  = data.aws_caller_identity.current.account_id
   cluster_arn = data.aws_ecs_cluster.this.arn
-
   tags = merge(
     {
       Terraform = "true"
@@ -107,20 +106,9 @@ locals {
       }
     }
   }]
-}
 
-data "aws_caller_identity" "current" {}
+  # NOTE: Jobs that are ran on a schedule should not use an autoscaling policy and should instead start/stop as per the run-task command.
+  has_autoscaler = var.container_definition_kind != "job" ? true : false
 
-data "aws_ecs_cluster" "this" {
-  cluster_name = var.cluster_name
-}
-
-data "aws_cloudwatch_log_group" "this" {
-  name = var.cloudwatch_log_group_name
-}
-
-data "aws_service_discovery_dns_namespace" "this" {
-  count = var.private_dns_namespace != null ? 1 : 0
-  name  = var.private_dns_namespace
-  type  = "DNS_PRIVATE"
+  autoscaling_metrics = local.has_autoscaler ? var.autoscaling_metrics : {}
 }
