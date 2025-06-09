@@ -9,14 +9,6 @@ repos:
           - --hook-config=--path-to-file=README.md
           - --hook-config=--add-to-existing-file=true
           - --hook-config=--create-file-if-not-exist=true
-      - id: terraform_tflint
-        args:
-          - --args=--enable-plugin=aws
-          - --args=--disable-rule=aws_route53_record_invalid_health_check_id
-          - --args=--disable-rule=aws_route53_record_invalid_name
-          - --args=--disable-rule=aws_route53_record_invalid_set_identifier
-          - --args=--disable-rule=aws_route53_record_invalid_type
-          - --args=--disable-rule=aws_route53_record_invalid_zone_id
       - id: terraform_providers_lock
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
