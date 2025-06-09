@@ -15,17 +15,11 @@ jobs:
         terraform_version: 1.11
     - name: terraform init
       run: |
-        cd github
-        for d in */ ; do (cd "$d" && terraform init -input=false -no-color -backend=false); done
-        cd ..
         cd aws
         for d in */ ; do (cd "$d" && terraform init -input=false -no-color -backend=false); done
         cd ..
     - name: terraform fmt
       run: |
-        cd github
-        for d in */ ; do (cd "$d" && terraform fmt -no-color -check -diff -recursive=true); done
-        cd ..
         cd aws
         for d in */ ; do (cd "$d" && terraform fmt -no-color -check -diff -recursive=true); done
         cd ..
