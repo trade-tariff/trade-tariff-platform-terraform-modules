@@ -107,8 +107,5 @@ locals {
     }
   }]
 
-  # NOTE: Jobs that are ran on a schedule should not use an autoscaling policy and should instead start/stop as per the run-task command.
-  has_autoscaler = var.container_definition_kind != "job" ? true : false
-
-  autoscaling_metrics = local.has_autoscaler ? var.autoscaling_metrics : {}
+  autoscaling_metrics = var.has_autoscaler ? var.autoscaling_metrics : {}
 }

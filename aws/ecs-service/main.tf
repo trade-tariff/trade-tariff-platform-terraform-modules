@@ -79,7 +79,7 @@ resource "aws_ecs_task_definition" "this" {
 }
 
 resource "aws_appautoscaling_target" "this" {
-  count              = local.has_autoscaler ? 1 : 0
+  count              = var.has_autoscaler ? 1 : 0
   max_capacity       = var.max_capacity
   min_capacity       = var.min_capacity
   resource_id        = "service/${var.cluster_name}/${aws_ecs_service.this.name}"
