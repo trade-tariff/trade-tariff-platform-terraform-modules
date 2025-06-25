@@ -212,3 +212,9 @@ variable "container_definition_kind" {
   type        = string
   default     = "web"
 }
+
+variable "has_autoscaler" {
+  description = "Whether the service has an autoscaler. Defaults to `false`."
+  type        = bool
+  default     = true
+}
