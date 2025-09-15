@@ -122,8 +122,8 @@ resource "aws_service_discovery_service" "this" {
 resource "aws_cloudwatch_metric_alarm" "service_count" {
   count = var.enable_service_count_alarm ? 1 : 0
 
-  alarm_name        = "Task Count (${title(var.service_name)}"
-  alarm_description = "Task count alarm for ${title(var.service_name)}"
+  alarm_name        = "Task Count (${var.service_name})"
+  alarm_description = "Task count alarm for ${var.service_name}"
 
   namespace           = "AWS/ECS"
   metric_name         = "RunningTaskCount"
