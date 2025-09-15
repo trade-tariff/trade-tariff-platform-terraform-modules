@@ -125,7 +125,7 @@ resource "aws_cloudwatch_metric_alarm" "service_count" {
   alarm_name        = "Task Count (${var.service_name})"
   alarm_description = "Task count alarm for ${var.service_name}"
 
-  namespace           = "AWS/ECS"
+  namespace           = "ECS/ContainerInsights"
   metric_name         = "RunningTaskCount"
   threshold           = 1
   evaluation_periods  = 5
