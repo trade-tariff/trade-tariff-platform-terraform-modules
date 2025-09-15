@@ -118,3 +118,24 @@ resource "aws_service_discovery_service" "this" {
     }
   }
 }
+
+resource "aws_cloudwatch_metric_alarm" "service_count" {
+  count = var.enable_service_count_alarm ? 1 : 0
+
+  alarm_name        = "Task Count (${var.service_name})"
+  alarm_description = "Task count alarm for ${var.service_name}"
+
+  namespace           = "AWS/ECS"
+  metric_name         = "RunningTaskCount"
+  threshold           = 1
+  evaluation_periods  = 5
+  comparison_operator = "LessThanThreshold"
+  period              = 60
+  statistic           = "Average"
+  treat_missing_data  = "ignore"
+
+  dimensions = {
+    ClusterName = data.aws_ecs_cluster.this.cluster_name
+    ServiceName = aws_ecs_service.this.name
+  }
+}
