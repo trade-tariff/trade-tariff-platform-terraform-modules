@@ -135,7 +135,7 @@ resource "aws_cloudwatch_metric_alarm" "service_count" {
   treat_missing_data  = "ignore"
 
   alarm_actions = [var.slack_topic_arn]
-  ok_actions = [var.slack_topic_arn]
+  ok_actions    = [var.slack_topic_arn]
 
   dimensions = {
     ClusterName = data.aws_ecs_cluster.this.cluster_name
