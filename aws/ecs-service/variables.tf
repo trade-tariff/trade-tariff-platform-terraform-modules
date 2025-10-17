@@ -224,3 +224,9 @@ variable "enable_service_count_alarm" {
   type        = bool
   default     = true
 }
+
+variable "sns_topic_arns" {
+  description = "List of SNS topic ARNs for alarm notifications"
+  type        = list(string)
+  default     = []
+}

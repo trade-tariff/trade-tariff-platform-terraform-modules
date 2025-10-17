@@ -134,6 +134,9 @@ resource "aws_cloudwatch_metric_alarm" "service_count" {
   statistic           = "Average"
   treat_missing_data  = "ignore"
 
+  alarm_actions = var.sns_topic_arns
+  ok_actions    = var.sns_topic_arns
+
   dimensions = {
     ClusterName = data.aws_ecs_cluster.this.cluster_name
     ServiceName = aws_ecs_service.this.name
