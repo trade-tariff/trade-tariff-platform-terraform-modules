@@ -225,7 +225,8 @@ variable "enable_service_count_alarm" {
   default     = true
 }
 
-variable "slack_topic_arn" {
-  description = "SNS topic ARN for Slack notifications"
-  type        = string
+variable "sns_topic_arns" {
+  description = "List of SNS topic ARNs for alarm notifications"
+  type        = list(string)
+  default     = []
 }
