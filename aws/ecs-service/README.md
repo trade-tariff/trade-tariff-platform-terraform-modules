@@ -23,6 +23,7 @@ No modules.
 | Name | Type |
 |------|------|
 | [aws_appautoscaling_policy.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_policy) | resource |
+| [aws_appautoscaling_scheduled_action.scheduled](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_scheduled_action) | resource |
 | [aws_appautoscaling_target.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_target) | resource |
 | [aws_cloudwatch_metric_alarm.service_count](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
 | [aws_ecs_service.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_service) | resource |
@@ -59,6 +60,8 @@ No modules.
 | <a name="input_enable_ecs_exec"></a> [enable\_ecs\_exec](#input\_enable\_ecs\_exec) | Whether to enable AWS ECS Exec for the task. Defaults to `false`. | `bool` | `false` | no |
 | <a name="input_enable_rollback"></a> [enable\_rollback](#input\_enable\_rollback) | Whether to enable circuit breaker rollbacks. Defaults to `true`. | `bool` | `true` | no |
 | <a name="input_enable_service_count_alarm"></a> [enable\_service\_count\_alarm](#input\_enable\_service\_count\_alarm) | Whether to create a CloudWatch alarm for the service that alarms when there are no running tasks for the service. Defaults to `true`. | `bool` | `true` | no |
+| <a name="input_enable_target_tracking_cpu"></a> [enable\_target\_tracking\_cpu](#input\_enable\_target\_tracking\_cpu) | Enable target tracking for CPU (ECSServiceAverageCPUUtilization). | `bool` | `true` | no |
+| <a name="input_enable_target_tracking_memory"></a> [enable\_target\_tracking\_memory](#input\_enable\_target\_tracking\_memory) | Enable target tracking for Memory (ECSServiceAverageMemoryUtilization). | `bool` | `true` | no |
 | <a name="input_execution_role_policy_arns"></a> [execution\_role\_policy\_arns](#input\_execution\_role\_policy\_arns) | A list of additional policy ARNs to attach to the service's execution role. | `list(string)` | `[]` | no |
 | <a name="input_has_autoscaler"></a> [has\_autoscaler](#input\_has\_autoscaler) | Whether the service has an autoscaler. Defaults to `false`. | `bool` | `true` | no |
 | <a name="input_init_container_command"></a> [init\_container\_command](#input\_init\_container\_command) | String array representing the command to run in the init container. First argument should be the shell to use, if required. Defaults to `null`, that is, no command override. | `list(string)` | `null` | no |
@@ -68,6 +71,10 @@ No modules.
 | <a name="input_min_capacity"></a> [min\_capacity](#input\_min\_capacity) | A minimum capacity for autoscaling. Defaults to 1. | `number` | `1` | no |
 | <a name="input_private_dns_namespace"></a> [private\_dns\_namespace](#input\_private\_dns\_namespace) | Private DNS namespace name. If provided, enables service discovery. | `string` | `null` | no |
 | <a name="input_region"></a> [region](#input\_region) | AWS region. | `string` | n/a | yes |
+| <a name="input_scale_in_cooldown"></a> [scale\_in\_cooldown](#input\_scale\_in\_cooldown) | Scale-in cooldown (seconds) applied to all target tracking policies. | `number` | `300` | no |
+| <a name="input_scale_out_cooldown"></a> [scale\_out\_cooldown](#input\_scale\_out\_cooldown) | Scale-out cooldown (seconds) applied to all target tracking policies. | `number` | `60` | no |
+| <a name="input_scheduled_actions_enabled"></a> [scheduled\_actions\_enabled](#input\_scheduled\_actions\_enabled) | Enable scheduled scaling actions. | `bool` | `false` | no |
+| <a name="input_scheduled_scaling_actions"></a> [scheduled\_scaling\_actions](#input\_scheduled\_scaling\_actions) | Map of scheduled scaling actions keyed by a unique name. Each value must include:<br/>- schedule     : AWS cron expression in UTC, e.g. 'cron(0 7 ? * MON-FRI *)'<br/>- min\_capacity : minimum desired tasks at schedule time<br/>- max\_capacity : maximum desired tasks at schedule time | <pre>map(object({<br/>    schedule     = string<br/>    min_capacity = number<br/>    max_capacity = number<br/>  }))</pre> | `{}` | no |
 | <a name="input_security_groups"></a> [security\_groups](#input\_security\_groups) | A list of security group IDs to asssociate with the service. | `list(string)` | n/a | yes |
 | <a name="input_service_count"></a> [service\_count](#input\_service\_count) | Number of replicas of the service to create. Defaults to 1. | `number` | `1` | no |
 | <a name="input_service_environment_config"></a> [service\_environment\_config](#input\_service\_environment\_config) | Service specific environment config | `list(map(string))` | `[]` | no |
