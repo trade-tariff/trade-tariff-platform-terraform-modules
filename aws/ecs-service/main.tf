@@ -142,6 +142,6 @@ resource "aws_cloudwatch_metric_alarm" "service_count" {
 
   dimensions = {
     ClusterName = data.aws_ecs_cluster.this.cluster_name
-    ServiceName = aws_ecs_service.this[0].name
+    ServiceName = var.service_name
   }
 }
