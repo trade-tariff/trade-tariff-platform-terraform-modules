@@ -1,6 +1,6 @@
 resource "aws_ecs_service" "this" {
   //one time job doesn't need to be added into the service, instead it is run by github action
-  count = var.container_definition_kind == "job" ? 0 : 1
+  count = local.service_exists ? 0 : 1
 
   name             = var.service_name
   cluster          = local.cluster_arn
@@ -82,10 +82,10 @@ resource "aws_ecs_task_definition" "this" {
 }
 
 resource "aws_appautoscaling_target" "this" {
-  count              = var.has_autoscaler ? 1 : 0
+  count              = var.has_autoscaler && local.service_exists ? 1 : 0
   max_capacity       = var.max_capacity
   min_capacity       = var.min_capacity
-  resource_id        = "service/${var.cluster_name}/${aws_ecs_service.this.name}"
+  resource_id        = "service/${var.cluster_name}/${aws_ecs_service.this[0].name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
 }
@@ -123,7 +123,7 @@ resource "aws_service_discovery_service" "this" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "service_count" {
-  count = var.enable_service_count_alarm ? 1 : 0
+  count = var.enable_service_count_alarm && local.service_exists ? 1 : 0
 
   alarm_name        = "Task Count (${var.service_name})"
   alarm_description = "Task count alarm for ${var.service_name}"
@@ -142,6 +142,6 @@ resource "aws_cloudwatch_metric_alarm" "service_count" {
 
   dimensions = {
     ClusterName = data.aws_ecs_cluster.this.cluster_name
-    ServiceName = aws_ecs_service.this.name
+    ServiceName = aws_ecs_service.this[0].name
   }
 }
