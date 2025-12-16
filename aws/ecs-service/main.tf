@@ -1,6 +1,6 @@
 resource "aws_ecs_service" "this" {
-  //one time job doesn't need to be added into the service, instead it is run by github action
-  count = local.service_exists ? 0 : 1
+  // NOTE: Services keep tasks alive - one off jobs do not need a service
+  count = var.container_definition_kind != "job" ? 0 : 1
 
   name             = var.service_name
   cluster          = local.cluster_arn
