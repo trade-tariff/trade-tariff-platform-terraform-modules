@@ -10,6 +10,8 @@ locals {
 
   actual_container_definition = jsonencode(local.container_definition_kinds[var.container_definition_kind])
 
+  service_exists = var.container_definition_kind != "job"
+
   container_definition_kinds = {
     "web"       = local.container_definition
     "db-backed" = local.init_container_definition
