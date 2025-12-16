@@ -85,14 +85,14 @@ resource "aws_appautoscaling_target" "this" {
   count              = var.has_autoscaler && local.service_exists ? 1 : 0
   max_capacity       = var.max_capacity
   min_capacity       = var.min_capacity
-  resource_id        = "service/${var.cluster_name}/${aws_ecs_service.this[0].name}"
+  resource_id        = "service/${var.cluster_name}/${var.service_name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
 }
 
 resource "aws_appautoscaling_policy" "this" {
   for_each           = local.autoscaling_metrics
-  name               = "${aws_ecs_service.this[0].name}-scaling-policy-${each.key}"
+  name               = "${var.service_name}-scaling-policy-${each.key}"
   policy_type        = "TargetTrackingScaling"
   resource_id        = aws_appautoscaling_target.this[0].resource_id
   scalable_dimension = aws_appautoscaling_target.this[0].scalable_dimension
