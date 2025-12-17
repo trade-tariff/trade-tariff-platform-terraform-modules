@@ -1,6 +1,6 @@
 resource "aws_ecs_service" "this" {
   // NOTE: Services keep tasks alive - one off jobs do not need a service
-  count = var.container_definition_kind != "job" ? 0 : 1
+  count = local.service_exists ? 1 : 0
 
   name             = var.service_name
   cluster          = local.cluster_arn
