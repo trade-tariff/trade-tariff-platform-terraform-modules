@@ -123,10 +123,55 @@ variable "autoscaling_metrics" {
   }
 }
 
+variable "enable_target_tracking_cpu" {
+  description = "Enable target tracking for CPU (ECSServiceAverageCPUUtilization)."
+  type        = bool
+  default     = true
+}
+
+variable "enable_target_tracking_memory" {
+  description = "Enable target tracking for Memory (ECSServiceAverageMemoryUtilization)."
+  type        = bool
+  default     = true
+}
+
+variable "scale_in_cooldown" {
+  description = "Scale-in cooldown (seconds) applied to all target tracking policies."
+  type        = number
+  default     = 300
+}
+
+variable "scale_out_cooldown" {
+  description = "Scale-out cooldown (seconds) applied to all target tracking policies."
+  type        = number
+  default     = 60
+}
+
 variable "target_group_arn" {
   description = "ARN of the load balancer target group."
   type        = string
   default     = null
+}
+
+variable "scheduled_scaling_actions" {
+  description = <<EOT
+Map of scheduled scaling actions keyed by a unique name. Each value must include:
+- schedule     : AWS cron expression in UTC, e.g. 'cron(0 7 ? * MON-FRI *)'
+- min_capacity : minimum desired tasks at schedule time
+- max_capacity : maximum desired tasks at schedule time
+EOT
+  type = map(object({
+    schedule     = string
+    min_capacity = number
+    max_capacity = number
+  }))
+  default = {}
+}
+
+variable "scheduled_actions_enabled" {
+  description = "Enable scheduled scaling actions."
+  type        = bool
+  default     = false
 }
 
 variable "security_groups" {

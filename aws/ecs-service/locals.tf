@@ -109,5 +109,14 @@ locals {
     }
   }]
 
-  autoscaling_metrics = var.has_autoscaler ? var.autoscaling_metrics : {}
+  autoscaling_metrics = var.has_autoscaler ? {
+    for k, v in var.autoscaling_metrics :
+    k => v
+    if(
+      k == "cpu" ? var.enable_target_tracking_cpu :
+      k == "memory" ? var.enable_target_tracking_memory :
+      true
+    )
+  } : {}
+
 }

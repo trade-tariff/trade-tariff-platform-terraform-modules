@@ -102,9 +102,28 @@ resource "aws_appautoscaling_policy" "this" {
     predefined_metric_specification {
       predefined_metric_type = each.value.metric_type
     }
-    target_value = each.value.target_value
+    target_value       = each.value.target_value
+    scale_in_cooldown  = var.scale_in_cooldown
+    scale_out_cooldown = var.scale_out_cooldown
   }
 
+  depends_on = [aws_appautoscaling_target.this[0]]
+}
+
+resource "aws_appautoscaling_scheduled_action" "scheduled" {
+  for_each = var.has_autoscaler && var.scheduled_actions_enabled ? var.scheduled_scaling_actions : {}
+
+  name               = "${aws_ecs_service.this.name}-${each.key}"
+  service_namespace  = aws_appautoscaling_target.this[0].service_namespace
+  resource_id        = aws_appautoscaling_target.this[0].resource_id
+  scalable_dimension = aws_appautoscaling_target.this[0].scalable_dimension
+
+  schedule = each.value.schedule
+
+  scalable_target_action {
+    min_capacity = each.value.min_capacity
+    max_capacity = each.value.max_capacity
+  }
   depends_on = [aws_appautoscaling_target.this[0]]
 }
 
