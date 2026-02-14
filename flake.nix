@@ -20,20 +20,20 @@
         terraform = nixpkgs-terraform.packages.${system}."1.12";
         pkgs = import nixpkgs { inherit system; };
 
-        lint = pkgs.writeScriptBin "lint" ''
+        lint = pkgs.writeShellScriptBin "lint" ''
           ${pkgs.pre-commit}/bin/pre-commit run -a
         '';
 
-        clean = pkgs.writeScriptBin "clean" ''
+        clean = pkgs.writeShellScriptBin "clean" ''
           find . -type d -name ".terraform" | xargs -- rm -rf
           find . -type f -name ".terraform.lock.hcl" -delete
         '';
 
-        init = pkgs.writeScriptBin "init" ''
+        init = pkgs.writeShellScriptBin "init" ''
           cd aws/ecs-service && terraform init -input=false -no-color -backend=false && cd ../..
         '';
 
-        update-providers = pkgs.writeScriptBin "update-providers" ''clean && init'';
+        update-providers = pkgs.writeShellScriptBin "update-providers" ''clean && init'';
       in
       {
         devShells.default = pkgs.mkShell {
