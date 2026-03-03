@@ -145,3 +145,54 @@ resource "aws_cloudwatch_metric_alarm" "service_count" {
     ServiceName = var.service_name
   }
 }
+
+resource "aws_cloudwatch_metric_alarm" "ecs_task_flapping" {
+  count = var.enable_service_count_alarm && local.service_exists ? 1 : 0
+
+  alarm_name        = "ecs-task-flapping-${var.service_name}"
+  alarm_description = "ECS tasks restarting too frequently for ${var.service_name}"
+
+  comparison_operator = "GreaterThanThreshold"
+  threshold           = 3
+  evaluation_periods  = 5
+  datapoints_to_alarm = 1
+  treat_missing_data  = "notBreaching"
+
+  metric_name = "TaskStopped"
+  namespace   = "ECS/ContainerInsights"
+  period      = 60
+  statistic   = "Sum"
+
+  dimensions = {
+    ClusterName = data.aws_ecs_cluster.this.cluster_name
+    ServiceName = var.service_name
+  }
+
+  alarm_actions = var.sns_topic_arns
+  ok_actions    = var.sns_topic_arns
+}
+
+resource "aws_cloudwatch_metric_alarm" "ecs_high_cpu_critical" {
+  count = var.enable_service_count_alarm && local.service_exists ? 1 : 0
+
+  alarm_name        = "ecs-high-cpu-${var.service_name}"
+  alarm_description = "ECS CPU > 75% for ${var.service_name} — potential scaling failure"
+
+  comparison_operator = "GreaterThanThreshold"
+  threshold           = 75
+  evaluation_periods  = 5
+  period              = 60
+  statistic           = "Average"
+  treat_missing_data  = "notBreaching"
+
+  namespace   = "ECS/ContainerInsights"
+  metric_name = "CpuUtilized"
+
+  dimensions = {
+    ClusterName = data.aws_ecs_cluster.this.cluster_name
+    ServiceName = var.service_name
+  }
+
+  alarm_actions = var.sns_topic_arns
+  ok_actions    = var.sns_topic_arns
+}
