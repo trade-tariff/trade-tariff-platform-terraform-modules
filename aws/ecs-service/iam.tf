@@ -28,14 +28,13 @@ resource "aws_iam_role_policy_attachment" "execution_role_additional_policies" {
   policy_arn = var.execution_role_policy_arns[count.index]
 }
 
+# Task role: used by the application running inside the ECS task (not by ECS control plane).
+# This module does not attach any default managed policy. Callers must grant least-privilege
+# permissions via var.task_role_policy_arns (e.g. scoped policies for S3, Secrets Manager,
+# SQS, RDS, or other services the task needs). Do not use AWS managed full-access policies.
 resource "aws_iam_role" "task_role" {
   name               = "${var.service_name}-task-role"
   assume_role_policy = data.aws_iam_policy_document.ecs_tasks_assume_role_policy.json
-}
-
-resource "aws_iam_role_policy_attachment" "task_role_policy" {
-  role       = aws_iam_role.task_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonECS_FullAccess"
 }
 
 resource "aws_iam_role_policy_attachment" "task_role_additional_policies" {
