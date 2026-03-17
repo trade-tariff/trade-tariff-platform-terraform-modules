@@ -129,10 +129,13 @@ variable "target_group_arn" {
   default     = null
 }
 
-variable "target_group_arns" {
-  description = "ARNs of the load balancer target groups. Takes precedence over `target_group_arn` when set."
-  type        = list(string)
-  default     = []
+variable "target_group_mappings" {
+  description = "Explicit load balancer target group to container port mappings. Takes precedence over `target_group_arn` when set."
+  type = list(object({
+    target_group_arn = string
+    container_port   = number
+  }))
+  default = []
 }
 
 variable "security_groups" {
