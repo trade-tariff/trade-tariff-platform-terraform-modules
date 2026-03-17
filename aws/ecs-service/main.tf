@@ -12,11 +12,11 @@ resource "aws_ecs_service" "this" {
   enable_execute_command = var.enable_ecs_exec
 
   dynamic "load_balancer" {
-    for_each = local.target_group_arns
+    for_each = local.target_group_port_mappings
     content {
       container_name   = var.service_name
-      container_port   = var.container_port
-      target_group_arn = load_balancer.value
+      container_port   = load_balancer.value.container_port
+      target_group_arn = load_balancer.value.target_group_arn
     }
   }
 

@@ -12,7 +12,16 @@ locals {
 
   service_exists = var.container_definition_kind != "job"
 
-  target_group_arns = length(var.target_group_arns) > 0 ? var.target_group_arns : var.target_group_arn != null ? [var.target_group_arn] : []
+  container_ports = distinct(length(var.target_group_mappings) > 0 ? [
+    for mapping in var.target_group_mappings : mapping.container_port
+  ] : [var.container_port])
+
+  target_group_port_mappings = length(var.target_group_mappings) > 0 ? var.target_group_mappings : var.target_group_arn != null ? [
+    {
+      target_group_arn = var.target_group_arn
+      container_port   = var.container_port
+    }
+  ] : []
 
   container_definition_kinds = {
     "web"       = local.container_definition
@@ -48,10 +57,12 @@ locals {
       entryPoint  = var.container_entrypoint
       command     = var.container_command
 
-      portMappings = [{
-        protocol      = "tcp"
-        containerPort = var.container_port
-      }]
+      portMappings = [
+        for port in local.container_ports : {
+          protocol      = "tcp"
+          containerPort = port
+        }
+      ]
 
       logConfiguration = {
         logDriver = "awslogs"
@@ -78,10 +89,12 @@ locals {
     entryPoint  = var.container_entrypoint
     command     = var.container_command
 
-    portMappings = [{
-      protocol      = "tcp"
-      containerPort = var.container_port
-    }]
+    portMappings = [
+      for port in local.container_ports : {
+        protocol      = "tcp"
+        containerPort = port
+      }
+    ]
 
     logConfiguration = {
       logDriver = "awslogs"

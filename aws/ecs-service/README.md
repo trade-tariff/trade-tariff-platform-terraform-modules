@@ -78,7 +78,7 @@ No modules.
 | <a name="input_subnet_ids"></a> [subnet\_ids](#input\_subnet\_ids) | Subnet IDs to place the service into. | `list(string)` | n/a | yes |
 | <a name="input_tags"></a> [tags](#input\_tags) | A map of tags to apply to all resources in this module. | `map(string)` | `{}` | no |
 | <a name="input_target_group_arn"></a> [target\_group\_arn](#input\_target\_group\_arn) | ARN of the load balancer target group. | `string` | `null` | no |
-| <a name="input_target_group_arns"></a> [target\_group\_arns](#input\_target\_group\_arns) | ARNs of the load balancer target groups. Takes precedence over `target_group_arn` when set. | `list(string)` | `[]` | no |
+| <a name="input_target_group_mappings"></a> [target\_group\_mappings](#input\_target\_group\_mappings) | Explicit load balancer target group to container port mappings. Takes precedence over `target_group_arn` when set. | <pre>list(object({<br/>    target_group_arn = string<br/>    container_port   = number<br/>  }))</pre> | `[]` | no |
 | <a name="input_task_role_policy_arns"></a> [task\_role\_policy\_arns](#input\_task\_role\_policy\_arns) | A list of additional policy ARNs to attach to the service's task role. | `list(string)` | `[]` | no |
 | <a name="input_timeout"></a> [timeout](#input\_timeout) | Timeout time for the ECS service to become stable before producing a Terraform error. | `string` | `"15m"` | no |
 | <a name="input_wait_for_steady_state"></a> [wait\_for\_steady\_state](#input\_wait\_for\_steady\_state) | Whether to wait for the service to become stable akin to `aws ecs wait services-stable`. Defaults to true. | `bool` | `true` | no |
