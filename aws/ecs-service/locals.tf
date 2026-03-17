@@ -12,6 +12,8 @@ locals {
 
   service_exists = var.container_definition_kind != "job"
 
+  target_group_arns = length(var.target_group_arns) > 0 ? var.target_group_arns : var.target_group_arn != null ? [var.target_group_arn] : []
+
   container_definition_kinds = {
     "web"       = local.container_definition
     "db-backed" = local.init_container_definition

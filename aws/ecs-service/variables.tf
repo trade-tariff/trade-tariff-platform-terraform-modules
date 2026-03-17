@@ -129,6 +129,12 @@ variable "target_group_arn" {
   default     = null
 }
 
+variable "target_group_arns" {
+  description = "ARNs of the load balancer target groups. Takes precedence over `target_group_arn` when set."
+  type        = list(string)
+  default     = []
+}
+
 variable "security_groups" {
   description = "A list of security group IDs to asssociate with the service."
   type        = list(string)
