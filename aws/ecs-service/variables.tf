@@ -228,8 +228,8 @@ variable "has_autoscaler" {
   default     = true
 }
 
-variable "enable_service_count_alarm" {
-  description = "Whether to create a CloudWatch alarm for the service that alarms when there are no running tasks for the service. Defaults to `true`."
+variable "enable_alarms" {
+  description = "Whether to enable CloudWatch alarms for the service. Defaults to `true`."
   type        = bool
   default     = true
 }
@@ -238,4 +238,9 @@ variable "sns_topic_arns" {
   description = "List of SNS topic ARNs for alarm notifications"
   type        = list(string)
   default     = []
+}
+
+variable "cpu_alarm_threshold" {
+  type        = number
+  description = "CPU % at which to alarm — should be ~25% above autoscaling target"
 }
