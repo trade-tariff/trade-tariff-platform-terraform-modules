@@ -123,7 +123,7 @@ resource "aws_service_discovery_service" "this" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "service_count" {
-  count = var.enable_service_count_alarm && local.service_exists ? 1 : 0
+  count = var.enable_alarms && local.service_exists ? 1 : 0
 
   alarm_name        = "Task Count (${var.service_name})"
   alarm_description = "Task count alarm for ${var.service_name}"
@@ -144,4 +144,94 @@ resource "aws_cloudwatch_metric_alarm" "service_count" {
     ClusterName = data.aws_ecs_cluster.this.cluster_name
     ServiceName = var.service_name
   }
+
+  tags = local.tags
+}
+
+resource "aws_cloudwatch_metric_alarm" "ecs_capacity_loss" {
+  count = var.enable_alarms && local.service_exists ? 1 : 0
+
+  alarm_name        = "ecs-capacity-loss-${var.service_name}"
+  alarm_description = "ECS running task count below desired for ${var.service_name}"
+
+  comparison_operator = "LessThanThreshold"
+  threshold           = 0
+  evaluation_periods  = 5
+  datapoints_to_alarm = 3
+
+  treat_missing_data = "Breaching"
+
+  alarm_actions = var.sns_topic_arns
+  ok_actions    = var.sns_topic_arns
+
+  tags = local.tags
+
+  metric_query {
+    id          = "running"
+    return_data = false
+
+    metric {
+      namespace   = "ECS/ContainerInsights"
+      metric_name = "RunningTaskCount"
+      period      = 60
+      stat        = "Average"
+
+      dimensions = {
+        ClusterName = var.cluster_name
+        ServiceName = var.service_name
+      }
+    }
+  }
+
+  metric_query {
+    id          = "desired"
+    return_data = false
+
+    metric {
+      namespace   = "ECS/ContainerInsights"
+      metric_name = "DesiredTaskCount"
+      period      = 60
+      stat        = "Average"
+
+      dimensions = {
+        ClusterName = var.cluster_name
+        ServiceName = var.service_name
+      }
+    }
+  }
+
+  metric_query {
+    id          = "diff"
+    expression  = "running - desired"
+    label       = "Running minus Desired"
+    return_data = true
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "ecs_high_cpu" {
+  count = var.enable_alarms && local.service_exists ? 1 : 0
+
+  alarm_name        = "ecs-high-cpu-${var.service_name}"
+  alarm_description = "ECS CPU > ${var.cpu_alarm_threshold}% for ${var.service_name} — autoscaling may not be keeping up"
+
+  comparison_operator = "GreaterThanThreshold"
+  threshold           = var.cpu_alarm_threshold
+  evaluation_periods  = 5
+  datapoints_to_alarm = 3
+  period              = 60
+  statistic           = "Average"
+  treat_missing_data  = "notBreaching"
+
+  namespace   = "AWS/ECS"
+  metric_name = "CPUUtilization"
+
+  alarm_actions = var.sns_topic_arns
+  ok_actions    = var.sns_topic_arns
+
+  dimensions = {
+    ClusterName = var.cluster_name
+    ServiceName = var.service_name
+  }
+
+  tags = local.tags
 }
