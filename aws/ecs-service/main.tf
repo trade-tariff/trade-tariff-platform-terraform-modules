@@ -167,7 +167,7 @@ resource "aws_cloudwatch_metric_alarm" "ecs_capacity_loss" {
   tags = local.tags
 
   metric_query {
-    id = "running"
+    id          = "running"
     return_data = false
 
     metric {
@@ -184,7 +184,7 @@ resource "aws_cloudwatch_metric_alarm" "ecs_capacity_loss" {
   }
 
   metric_query {
-    id = "desired"
+    id          = "desired"
     return_data = false
 
     metric {
