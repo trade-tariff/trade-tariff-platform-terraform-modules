@@ -159,7 +159,7 @@ resource "aws_cloudwatch_metric_alarm" "ecs_capacity_loss" {
   evaluation_periods  = 5
   datapoints_to_alarm = 3
 
-  treat_missing_data = "Breaching"
+  treat_missing_data = "breaching"
 
   alarm_actions = var.sns_topic_arns
   ok_actions    = var.sns_topic_arns
