@@ -124,19 +124,19 @@ variable "autoscaling_metrics" {
 }
 
 variable "scale_in_cooldown" {
-  description = "Scale-in cooldown (seconds) applied to all target tracking policies."
+  description = "Prevents aggressive scale-in by enforcing a waiting period after tasks are removed."
   type        = number
   default     = 300
 }
 
 variable "scale_out_cooldown" {
-  description = "Scale-out cooldown (seconds) applied to all target tracking policies."
+  description = "Minimum time to wait after a scale-out before allowing another scale-out, giving new tasks time to start contributing capacity."
   type        = number
   default     = 60
 }
 
 variable "scheduled_actions_enabled" {
-  description = "Enable scheduled scaling actions."
+  description = "Enables scheduled scaling to proactively increase or reduce capacity during predictable traffic patterns."
   type        = bool
   default     = false
 }
