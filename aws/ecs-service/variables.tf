@@ -196,30 +196,22 @@ variable "enable_rollback" {
   default     = true
 }
 
-variable "init_container_entrypoint" {
-  description = "String array representing the entrypoint of the init container. Supply to override the Dockerfile. Defaults to `null`, that is, not overriding the Dockerfile."
-  type        = list(string)
-  default     = null
-}
-
-variable "init_container_command" {
-  description = "String array representing the command to run in the init container. First argument should be the shell to use, if required. Defaults to `null`, that is, no command override."
-  type        = list(string)
-  default     = null
-}
-
 variable "container_definition_kind" {
   description = <<EOT
   The kind of task to run.
 
-  Can be either `db-backed` or `job` or `web`. Defaults to `web`.
+  Can be either `job` or `web`. Defaults to `web`.
 
-  - `db-backed` - A task that is backed by a database and typically drives database migrations.
-  - `job` - A task that runs any arbitrary job with the priveleges of the task role and stops.
   - `web` - A task that runs a web service and is backed by a load balancer.
+  - `job` - A task that runs any arbitrary job with the priveleges of the task role and stops.
   EOT
   type        = string
   default     = "web"
+
+  validation {
+    condition     = contains(["web", "job"], var.container_definition_kind)
+    error_message = "container_definition_kind must be either 'web' or 'job'."
+  }
 }
 
 variable "has_autoscaler" {
