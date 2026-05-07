@@ -12,7 +12,7 @@
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | ~> 5 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.100.0 |
 
 ## Modules
 
@@ -24,8 +24,8 @@ No modules.
 |------|------|
 | [aws_appautoscaling_policy.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_policy) | resource |
 | [aws_appautoscaling_target.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_target) | resource |
-| [aws_cloudwatch_metric_alarm.ecs_high_cpu_critical](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
-| [aws_cloudwatch_metric_alarm.ecs_task_flapping](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
+| [aws_cloudwatch_metric_alarm.ecs_capacity_loss](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
+| [aws_cloudwatch_metric_alarm.ecs_high_cpu](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
 | [aws_cloudwatch_metric_alarm.service_count](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
 | [aws_ecs_service.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_service) | resource |
 | [aws_ecs_task_definition.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_task_definition) | resource |
@@ -50,21 +50,20 @@ No modules.
 | <a name="input_cloudwatch_log_group_name"></a> [cloudwatch\_log\_group\_name](#input\_cloudwatch\_log\_group\_name) | CloudWatch log group to use with the service. | `string` | n/a | yes |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | Name of the ECS Cluster to deploy the service into. | `string` | n/a | yes |
 | <a name="input_container_command"></a> [container\_command](#input\_container\_command) | String array representing the command to run in the container. First argument should be the shell to use, if required. Defaults to `null`, that is, no command override. | `list(string)` | `null` | no |
-| <a name="input_container_definition_kind"></a> [container\_definition\_kind](#input\_container\_definition\_kind) | The kind of task to run.<br/><br/>  Can be either `db-backed` or `job` or `web`. Defaults to `web`.<br/><br/>  - `db-backed` - A task that is backed by a database and typically drives database migrations.<br/>  - `job` - A task that runs any arbitrary job with the priveleges of the task role and stops.<br/>  - `web` - A task that runs a web service and is backed by a load balancer. | `string` | `"web"` | no |
+| <a name="input_container_definition_kind"></a> [container\_definition\_kind](#input\_container\_definition\_kind) | The kind of task to run.<br/><br/>  Can be either `job` or `web`. Defaults to `web`.<br/><br/>  - `web` - A task that runs a web service and is backed by a load balancer.<br/>  - `job` - A task that runs any arbitrary job with the priveleges of the task role and stops. | `string` | `"web"` | no |
 | <a name="input_container_entrypoint"></a> [container\_entrypoint](#input\_container\_entrypoint) | String array representing the entrypoint of the container. Supply to override the Dockerfile. Defaults to `null`, that is, not overriding the Dockerfile. | `list(string)` | `null` | no |
 | <a name="input_container_port"></a> [container\_port](#input\_container\_port) | Port the container should expose. | `number` | `80` | no |
 | <a name="input_cpu"></a> [cpu](#input\_cpu) | CPU limits for container. | `number` | `256` | no |
+| <a name="input_cpu_alarm_threshold"></a> [cpu\_alarm\_threshold](#input\_cpu\_alarm\_threshold) | CPU % at which to alarm — should be ~25% above autoscaling target | `number` | n/a | yes |
 | <a name="input_deployment_maximum_percent"></a> [deployment\_maximum\_percent](#input\_deployment\_maximum\_percent) | Maximum deployment as a percentage of `service_count`. Defaults to 200 for zero downtime deploys.. | `number` | `200` | no |
 | <a name="input_deployment_minimum_healthy_percent"></a> [deployment\_minimum\_healthy\_percent](#input\_deployment\_minimum\_healthy\_percent) | Minimum healthy percentage for a deployment. Defaults to 100 for zero downtime deploys. | `number` | `100` | no |
 | <a name="input_docker_image"></a> [docker\_image](#input\_docker\_image) | Base docker image to use. | `string` | n/a | yes |
 | <a name="input_docker_tag"></a> [docker\_tag](#input\_docker\_tag) | Tag of the docker image to use. | `string` | n/a | yes |
+| <a name="input_enable_alarms"></a> [enable\_alarms](#input\_enable\_alarms) | Whether to enable CloudWatch alarms for the service. Defaults to `true`. | `bool` | `true` | no |
 | <a name="input_enable_ecs_exec"></a> [enable\_ecs\_exec](#input\_enable\_ecs\_exec) | Whether to enable AWS ECS Exec for the task. Defaults to `false`. | `bool` | `false` | no |
 | <a name="input_enable_rollback"></a> [enable\_rollback](#input\_enable\_rollback) | Whether to enable circuit breaker rollbacks. Defaults to `true`. | `bool` | `true` | no |
-| <a name="input_enable_service_count_alarm"></a> [enable\_service\_count\_alarm](#input\_enable\_service\_count\_alarm) | Whether to create a CloudWatch alarm for the service that alarms when there are no running tasks for the service. Defaults to `true`. | `bool` | `true` | no |
 | <a name="input_execution_role_policy_arns"></a> [execution\_role\_policy\_arns](#input\_execution\_role\_policy\_arns) | A list of additional policy ARNs to attach to the service's execution role. | `list(string)` | `[]` | no |
 | <a name="input_has_autoscaler"></a> [has\_autoscaler](#input\_has\_autoscaler) | Whether the service has an autoscaler. Defaults to `false`. | `bool` | `true` | no |
-| <a name="input_init_container_command"></a> [init\_container\_command](#input\_init\_container\_command) | String array representing the command to run in the init container. First argument should be the shell to use, if required. Defaults to `null`, that is, no command override. | `list(string)` | `null` | no |
-| <a name="input_init_container_entrypoint"></a> [init\_container\_entrypoint](#input\_init\_container\_entrypoint) | String array representing the entrypoint of the init container. Supply to override the Dockerfile. Defaults to `null`, that is, not overriding the Dockerfile. | `list(string)` | `null` | no |
 | <a name="input_max_capacity"></a> [max\_capacity](#input\_max\_capacity) | A maximum capacity for autoscaling. | `number` | n/a | yes |
 | <a name="input_memory"></a> [memory](#input\_memory) | Memory limits for container. | `number` | `512` | no |
 | <a name="input_min_capacity"></a> [min\_capacity](#input\_min\_capacity) | A minimum capacity for autoscaling. Defaults to 1. | `number` | `1` | no |
