@@ -114,13 +114,46 @@ variable "autoscaling_metrics" {
   default = {
     cpu = {
       metric_type  = "ECSServiceAverageCPUUtilization"
-      target_value = 75
+      target_value = 55
     },
     memory = {
       metric_type  = "ECSServiceAverageMemoryUtilization"
       target_value = 70
     }
   }
+}
+
+variable "scale_in_cooldown" {
+  description = "Prevents aggressive scale-in by enforcing a waiting period after tasks are removed."
+  type        = number
+  default     = 300
+}
+
+variable "scale_out_cooldown" {
+  description = "Minimum time to wait after a scale-out before allowing another scale-out, giving new tasks time to start contributing capacity."
+  type        = number
+  default     = 60
+}
+
+variable "scheduled_actions_enabled" {
+  description = "Enables scheduled scaling to proactively increase or reduce capacity during predictable traffic patterns."
+  type        = bool
+  default     = false
+}
+
+variable "scheduled_scaling_actions" {
+  description = <<EOT
+Map of scheduled scaling actions keyed by a unique name. Each value must include:
+- schedule     : AWS cron expression in UTC, e.g. 'cron(0 7 ? * MON-FRI *)'
+- min_capacity : minimum desired tasks at schedule time
+- max_capacity : maximum desired tasks at schedule time
+EOT
+  type = map(object({
+    schedule     = string
+    min_capacity = number
+    max_capacity = number
+  }))
+  default = {}
 }
 
 variable "target_group_arn" {
