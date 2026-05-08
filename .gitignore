@@ -42,3 +42,9 @@ terraform.rc
 
 # Modules don't need lockfiles in the repo
 .terraform.lock.hcl
+
+# os files
+.DS_Store
+.Spotlight-V100
+.Trashes
+._*
