@@ -268,4 +268,5 @@ variable "sns_topic_arns" {
 variable "cpu_alarm_threshold" {
   type        = number
   description = "CPU % at which to alarm — should be ~25% above autoscaling target"
+  default     = null
 }
