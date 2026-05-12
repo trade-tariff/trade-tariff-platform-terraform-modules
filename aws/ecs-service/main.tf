@@ -228,7 +228,11 @@ resource "aws_cloudwatch_metric_alarm" "ecs_capacity_loss" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "ecs_high_cpu" {
-  count = var.enable_alarms && local.service_exists ? 1 : 0
+  count = (
+    var.enable_alarms &&
+    local.service_exists &&
+    var.cpu_alarm_threshold != null
+  ) ? 1 : 0
 
   alarm_name        = "ecs-high-cpu-${var.service_name}"
   alarm_description = "ECS CPU > ${var.cpu_alarm_threshold}% for ${var.service_name} — autoscaling may not be keeping up"
