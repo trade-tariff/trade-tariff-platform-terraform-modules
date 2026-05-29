@@ -265,6 +265,12 @@ variable "sns_topic_arns" {
   default     = []
 }
 
+variable "observability_sns_topic_arns" {
+  description = "SNS topic ARNs for lower-urgency observability alarms (capacity loss, high CPU)"
+  type        = list(string)
+  default     = null
+}
+
 variable "cpu_alarm_threshold" {
   type        = number
   description = "CPU % at which to alarm — should be ~25% above autoscaling target"

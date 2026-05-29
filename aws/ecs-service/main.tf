@@ -180,8 +180,8 @@ resource "aws_cloudwatch_metric_alarm" "ecs_capacity_loss" {
 
   treat_missing_data = "breaching"
 
-  alarm_actions = var.sns_topic_arns
-  ok_actions    = var.sns_topic_arns
+  alarm_actions = local.observability_topic_arns
+  ok_actions    = local.observability_topic_arns
 
   tags = local.tags
 
@@ -248,8 +248,8 @@ resource "aws_cloudwatch_metric_alarm" "ecs_high_cpu" {
   namespace   = "AWS/ECS"
   metric_name = "CPUUtilization"
 
-  alarm_actions = var.sns_topic_arns
-  ok_actions    = var.sns_topic_arns
+  alarm_actions = local.observability_topic_arns
+  ok_actions    = local.observability_topic_arns
 
   dimensions = {
     ClusterName = var.cluster_name
