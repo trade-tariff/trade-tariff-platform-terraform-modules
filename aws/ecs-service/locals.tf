@@ -73,4 +73,6 @@ locals {
   }]
 
   autoscaling_metrics = var.has_autoscaler ? var.autoscaling_metrics : {}
+
+  observability_topic_arns = coalesce(var.observability_sns_topic_arns, var.sns_topic_arns)
 }
