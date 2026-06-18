@@ -271,6 +271,12 @@ variable "observability_sns_topic_arns" {
   default     = null
 }
 
+variable "ecs_capacity_loss_topic_arns" {
+  description = "SNS topic ARNs for ECS capacity loss alarms"
+  type        = list(string)
+  default     = null
+}
+
 variable "cpu_alarm_threshold" {
   type        = number
   description = "CPU % at which to alarm — should be ~25% above autoscaling target"
