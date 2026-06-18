@@ -39,6 +39,7 @@ terraform.rc
 .nvimlog
 .direnv
 .envrc
+.pre-commit-config-nix.yaml
 
 # Modules don't need lockfiles in the repo
 .terraform.lock.hcl
