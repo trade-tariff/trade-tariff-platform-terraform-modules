@@ -175,8 +175,8 @@ resource "aws_cloudwatch_metric_alarm" "ecs_capacity_loss" {
 
   comparison_operator = "LessThanThreshold"
   threshold           = 0
-  evaluation_periods  = 5
-  datapoints_to_alarm = 3
+  evaluation_periods  = 10
+  datapoints_to_alarm = 8
 
   treat_missing_data = "breaching"
 
@@ -239,8 +239,8 @@ resource "aws_cloudwatch_metric_alarm" "ecs_high_cpu" {
 
   comparison_operator = "GreaterThanThreshold"
   threshold           = var.cpu_alarm_threshold
-  evaluation_periods  = 5
-  datapoints_to_alarm = 3
+  evaluation_periods  = 10
+  datapoints_to_alarm = 8
   period              = 60
   statistic           = "Average"
   treat_missing_data  = "notBreaching"
