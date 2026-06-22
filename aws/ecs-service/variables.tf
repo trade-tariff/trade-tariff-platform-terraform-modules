@@ -266,7 +266,7 @@ variable "sns_topic_arns" {
 }
 
 variable "observability_sns_topic_arns" {
-  description = "SNS topic ARNs for lower-urgency observability alarms (capacity loss, high CPU)"
+  description = "SNS topic ARNs for lower-urgency observability alarms (high CPU)"
   type        = list(string)
   default     = null
 }
