@@ -266,7 +266,13 @@ variable "sns_topic_arns" {
 }
 
 variable "observability_sns_topic_arns" {
-  description = "SNS topic ARNs for lower-urgency observability alarms (capacity loss, high CPU)"
+  description = "SNS topic ARNs for lower-urgency observability alarms (high CPU)"
+  type        = list(string)
+  default     = null
+}
+
+variable "ecs_capacity_loss_topic_arns" {
+  description = "SNS topic ARNs for ECS capacity loss alarms"
   type        = list(string)
   default     = null
 }
