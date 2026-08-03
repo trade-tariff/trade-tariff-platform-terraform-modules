@@ -249,7 +249,6 @@ resource "aws_cloudwatch_metric_alarm" "ecs_high_cpu" {
   metric_name = "CPUUtilization"
 
   alarm_actions = var.observability_sns_topic_arns
-  ok_actions    = var.observability_sns_topic_arns
 
   dimensions = {
     ClusterName = var.cluster_name
