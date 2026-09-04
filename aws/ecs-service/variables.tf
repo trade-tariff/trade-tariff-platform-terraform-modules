@@ -282,3 +282,59 @@ variable "cpu_alarm_threshold" {
   description = "CPU % at which to alarm — should be ~25% above autoscaling target"
   default     = null
 }
+
+variable "readonly_root_filesystem" {
+  description = <<EOT
+  Whether the container's root filesystem is mounted read-only. Defaults to `true`.
+
+  This closes the "container has root access to the host filesystem" attack path
+  reported by Amazon Inspector / Security Hub (control ECS.5). A read-only root
+  filesystem means a threat actor who exploits a vulnerability in the image cannot
+  persist a payload (miner, webshell, modified binary) onto the container filesystem.
+
+  Rails/Puma services need writable `tmp`, `log` and `/tmp` paths — declare those in
+  `writable_paths` rather than turning this off.
+
+  NOTE: AWS does not support combining this with ECS Exec. When `enable_ecs_exec` is
+  also true the module mounts the SSM agent's paths writable as a workaround — see the
+  module README before relying on break-glass access.
+  EOT
+  type        = bool
+  default     = true
+}
+
+variable "writable_paths" {
+  description = <<EOT
+  Absolute container paths that must stay writable when `readonly_root_filesystem` is
+  enabled. Each path is backed by an ephemeral Fargate volume mounted at that path.
+
+  Defaults to `["/tmp"]`. Rails services typically need their app tmp and log
+  directories too, e.g. `["/tmp", "/app/tmp", "/app/log"]`.
+  EOT
+  type        = list(string)
+  default     = ["/tmp"]
+
+  validation {
+    condition     = alltrue([for path in var.writable_paths : startswith(path, "/")])
+    error_message = "Every entry in writable_paths must be an absolute path beginning with '/'."
+  }
+}
+
+variable "container_user" {
+  description = <<EOT
+  The user the container process runs as, in any form the ECS `user` field accepts
+  (`user`, `uid`, `user:group`, `uid:gid`). Defaults to `null`, deferring to the
+  `USER` directive in the image's Dockerfile.
+
+  Set this when the image has no `USER` directive, so the task is never recorded as
+  running as root.
+
+  It is also REQUIRED when `readonly_root_filesystem` is true and the image runs as a
+  non-root user: Fargate mounts the writable volumes root-owned, so the module adds an
+  init container that chowns them to this user before the app container starts. Without
+  it, a non-root app crash-loops on boot with `Permission denied`. Prefer `uid:gid`
+  form and pin the ids in the image. See the module README.
+  EOT
+  type        = string
+  default     = null
+}
