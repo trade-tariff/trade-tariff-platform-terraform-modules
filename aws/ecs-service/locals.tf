@@ -52,6 +52,18 @@ locals {
         awslogs-group         = data.aws_cloudwatch_log_group.this.name
       }
     }
+
+    healthCheck = var.container_health_check == null ? null : merge(
+      {
+        command  = var.container_health_check.command
+        interval = var.container_health_check.interval
+        timeout  = var.container_health_check.timeout
+        retries  = var.container_health_check.retries
+      },
+      var.container_health_check.start_period != null ? {
+        startPeriod = var.container_health_check.start_period
+      } : {}
+    )
   }]
 
   job_container_definition = [{

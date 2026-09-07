@@ -282,3 +282,30 @@ variable "cpu_alarm_threshold" {
   description = "CPU % at which to alarm — should be ~25% above autoscaling target"
   default     = null
 }
+
+variable "container_health_check" {
+  description = <<EOT
+  (Optional) ECS-native container health check for `web` services. ECS does
+  not use a Dockerfile `HEALTHCHECK` instruction unless a check is also
+  configured here — without this, a service with no load balancer target
+  group has no application-level health signal at all, only "is the task
+  RUNNING".
+
+  Defaults to `null` (no container health check configured), which matches
+  the module's existing behaviour for every current consumer.
+
+  - command      : Full ECS health check command, e.g. `["CMD-SHELL", "curl -f http://localhost/healthcheckz || exit 1"]`.
+  - interval     : Seconds between checks. Defaults to 30.
+  - timeout      : Seconds before a check counts as failed. Defaults to 5.
+  - retries      : Consecutive failures before the container is marked unhealthy. Defaults to 3.
+  - start_period : Grace period in seconds before failed checks count, for slow-starting containers. Defaults to `null` (no grace period).
+  EOT
+  type = object({
+    command      = list(string)
+    interval     = optional(number, 30)
+    timeout      = optional(number, 5)
+    retries      = optional(number, 3)
+    start_period = optional(number)
+  })
+  default = null
+}
