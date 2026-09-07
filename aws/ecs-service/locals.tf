@@ -42,9 +42,17 @@ locals {
 
   effective_writable_paths = distinct(concat(var.writable_paths, local.ecs_exec_writable_paths))
 
+  # ECS volume names accept only letters, digits, hyphens and underscores, so every
+  # other character in the path (separators, dots) folds to a hyphen. `writable_paths`
+  # validates that no two entries collide once folded; the ECS Exec paths added below
+  # are fixed and known not to.
+  volume_name = { for path in local.effective_writable_paths :
+    path => lower(replace(trim(path, "/"), "/[^a-zA-Z0-9_-]+/", "-"))
+  }
+
   writable_volumes = var.readonly_root_filesystem ? {
     for path in local.effective_writable_paths :
-    replace(trimprefix(path, "/"), "/", "-") => path
+    local.volume_name[path] => path
   } : {}
 
   mount_points = [
@@ -61,7 +69,7 @@ locals {
   # user).
   app_writable_volumes = var.readonly_root_filesystem ? {
     for path in var.writable_paths :
-    replace(trimprefix(path, "/"), "/", "-") => path
+    local.volume_name[path] => path
   } : {}
 
   # Fargate mounts ephemeral volumes root-owned, mode 0755, and offers no tmpfs and no
