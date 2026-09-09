@@ -23,12 +23,106 @@ locals {
     }
   ] : []
 
-  container_definition_kinds = {
-    "web" = local.container_definition
-    "job" = local.job_container_definition
+  # Ephemeral Fargate volumes backing the paths that must stay writable while the
+  # root filesystem is read-only. Keyed by volume name so the task definition and
+  # the container mount points cannot drift apart.
+  # ECS Exec bind-mounts the SSM agent into the container, and that agent must be able
+  # to write its state and logs. AWS does not support pairing ECS Exec with a read-only
+  # root filesystem at all, so we mount writable volumes over the agent's paths to keep
+  # break-glass access working. The agent runs as root regardless of the container user,
+  # so the ownership of these mounts does not matter.
+  # /managed-agents is where ECS bind-mounts the exec agent binary itself; without a
+  # writable mount pre-existing at that path the bind-mount has nowhere to land and
+  # container startup fails outright, not just `execute-command`.
+  ecs_exec_writable_paths = var.enable_ecs_exec && var.readonly_root_filesystem ? [
+    "/var/lib/amazon/ssm",
+    "/var/log/amazon/ssm",
+    "/managed-agents",
+  ] : []
+
+  effective_writable_paths = distinct(concat(var.writable_paths, local.ecs_exec_writable_paths))
+
+  # ECS volume names accept only letters, digits, hyphens and underscores, so every
+  # other character in the path (separators, dots) folds to a hyphen. `writable_paths`
+  # validates that no two entries collide once folded; the ECS Exec paths added below
+  # are fixed and known not to.
+  volume_name = { for path in local.effective_writable_paths :
+    path => lower(replace(trim(path, "/"), "/[^a-zA-Z0-9_-]+/", "-"))
   }
 
-  container_definition = [{
+  writable_volumes = var.readonly_root_filesystem ? {
+    for path in local.effective_writable_paths :
+    local.volume_name[path] => path
+  } : {}
+
+  mount_points = [
+    for name, path in local.writable_volumes : {
+      sourceVolume  = name
+      containerPath = path
+      readOnly      = false
+    }
+  ]
+
+  # Paths the application process itself writes to. The SSM agent paths are excluded:
+  # that agent runs as root regardless of `container_user`, so it does not need the
+  # permission fix-up below (and must not have its directories reassigned to the app
+  # user).
+  app_writable_volumes = var.readonly_root_filesystem ? {
+    for path in var.writable_paths :
+    local.volume_name[path] => path
+  } : {}
+
+  # Fargate mounts ephemeral volumes root-owned, mode 0755, and offers no tmpfs and no
+  # way to set the mount owner. A container running as a non-root `container_user`
+  # therefore cannot write into its own mounted tmp/log directories and crash-loops on
+  # boot. When the caller has declared a non-root user, prepend a throwaway init
+  # container that runs as root, chowns those mounts to that user, and exits; the app
+  # container then waits for it to succeed before starting.
+  needs_volume_permissions_init = var.readonly_root_filesystem && var.container_user != null && length(local.app_writable_volumes) > 0
+
+  volume_permissions_container_name = "${var.service_name}-volume-permissions"
+
+  # Reuses the application image (all our images are Alpine-based, so /bin/sh and
+  # chown are present) to avoid pulling and pinning a second image.
+  volume_permissions_container = local.needs_volume_permissions_init ? [{
+    name       = local.volume_permissions_container_name
+    image      = "${var.docker_image}:${var.docker_tag}"
+    essential  = false
+    user       = "0"
+    entryPoint = ["/bin/sh", "-c"]
+    command    = ["chown -R ${var.container_user} ${join(" ", values(local.app_writable_volumes))}"]
+
+    mountPoints = [
+      for name, path in local.app_writable_volumes : {
+        sourceVolume  = name
+        containerPath = path
+        readOnly      = false
+      }
+    ]
+
+    logConfiguration = {
+      logDriver = "awslogs"
+      options = {
+        awslogs-region        = var.region
+        awslogs-stream-prefix = "ecs"
+        awslogs-group         = data.aws_cloudwatch_log_group.this.name
+      }
+    }
+  }] : []
+
+  app_container_depends_on = local.needs_volume_permissions_init ? {
+    dependsOn = [{
+      containerName = local.volume_permissions_container_name
+      condition     = "SUCCESS"
+    }]
+  } : {}
+
+  container_definition_kinds = {
+    "web" = concat(local.volume_permissions_container, local.container_definition)
+    "job" = concat(local.volume_permissions_container, local.job_container_definition)
+  }
+
+  container_definition = [merge(local.app_container_depends_on, {
     name        = var.service_name
     image       = "${var.docker_image}:${var.docker_tag}"
     essential   = true
@@ -36,6 +130,10 @@ locals {
     secrets     = var.service_secrets_config
     entryPoint  = var.container_entrypoint
     command     = var.container_command
+    user        = var.container_user
+
+    readonlyRootFilesystem = var.readonly_root_filesystem
+    mountPoints            = local.mount_points
 
     portMappings = [
       for port in local.container_ports : {
@@ -52,15 +150,19 @@ locals {
         awslogs-group         = data.aws_cloudwatch_log_group.this.name
       }
     }
-  }]
+  })]
 
-  job_container_definition = [{
+  job_container_definition = [merge(local.app_container_depends_on, {
     name        = var.service_name
     image       = "${var.docker_image}:${var.docker_tag}"
     essential   = true
     command     = var.container_command
     environment = var.service_environment_config
     secrets     = var.service_secrets_config
+    user        = var.container_user
+
+    readonlyRootFilesystem = var.readonly_root_filesystem
+    mountPoints            = local.mount_points
 
     logConfiguration = {
       logDriver = "awslogs"
@@ -70,7 +172,7 @@ locals {
         awslogs-group         = data.aws_cloudwatch_log_group.this.name
       }
     }
-  }]
+  })]
 
   autoscaling_metrics = var.has_autoscaler ? var.autoscaling_metrics : {}
 

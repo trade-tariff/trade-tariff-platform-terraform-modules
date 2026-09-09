@@ -73,6 +73,16 @@ resource "aws_ecs_task_definition" "this" {
 
   container_definitions = local.actual_container_definition
 
+  # Writable scratch space for a container whose root filesystem is read-only. These
+  # are ephemeral, task-scoped and encrypted by Fargate; they are discarded when the
+  # task stops, so anything a threat actor writes cannot outlive the task.
+  dynamic "volume" {
+    for_each = local.writable_volumes
+    content {
+      name = volume.key
+    }
+  }
+
   runtime_platform {
     operating_system_family = "LINUX"
     cpu_architecture        = "X86_64"

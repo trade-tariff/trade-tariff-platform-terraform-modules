@@ -1,5 +1,141 @@
 # ECS Service
 
+## Container hardening
+
+The module can render task definitions with a **read-only root filesystem**
+(`readonly_root_filesystem`, default `false`), satisfying Security Hub control **ECS.5**
+_"ECS containers should be limited to read-only access to root filesystems"_.
+
+Paths the process still needs to write to are declared in `writable_paths`. Each is
+backed by an ephemeral, task-scoped Fargate volume, destroyed when the task stops.
+
+**What this actually buys, stated precisely.** A threat actor who exploits a
+vulnerability in the image cannot tamper with the image's own binaries or config, and
+cannot write anywhere outside the declared `writable_paths` — which are ephemeral, so
+nothing they write survives the task. It does **not** restrict access to the host
+filesystem (ECS.5 is about the container's root filesystem, not the host's), and it does
+**not** stop a payload being written to and executed from a writable path such as
+`/tmp`. It raises the cost of persistence; it is not a containment boundary.
+
+### Why the default is `false`
+
+The module cannot know which paths a given image writes to, so it cannot enable this
+safely on your behalf. Turning it on without the matching `writable_paths` and
+`container_user` either crash-loops the service on boot (Rails services loading
+`bootsnap`) or — worse — boots cleanly and fails later on the first request that needs
+scratch space. A `true` default would also mean an unrelated ref bump silently changes
+runtime behaviour.
+
+Opt in per service, and verify in development before staging and production.
+
+### This conflicts with ECS Exec — read before enabling
+
+AWS **does not support** combining ECS Exec with a read-only root filesystem. From the
+[ECS Exec considerations](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-exec.html):
+
+> The SSM agent requires that the container file system can be written to in order to
+> create the required directories and files. Therefore, making the root file system
+> read-only using the `readonlyRootFilesystem` task definition parameter, or any other
+> method, isn't supported.
+
+When `enable_ecs_exec` and `readonly_root_filesystem` are both true, this module mounts
+writable volumes over `/var/lib/amazon/ssm`, `/var/log/amazon/ssm` and `/managed-agents`
+so the agent can still start — the last of these is where ECS itself bind-mounts the
+exec agent binary into the container, so without it present and writable the task can
+fail to start at all, not just `execute-command`. This is the community workaround, not
+a supported configuration — AWS may change the agent's paths without notice, and the
+failure mode is that exec breaks *silently*, discovered only when someone needs
+break-glass access during an incident.
+
+Verify `aws ecs execute-command` actually works in development after any bump, and treat
+it as a check that can regress. Tracked upstream at
+[containers-roadmap#1359](https://github.com/aws/containers-roadmap/issues/1359).
+
+Note also that exec sessions run as **root inside the container** regardless of
+`container_user`, so leaving exec enabled materially limits what the read-only root
+filesystem buys you.
+
+### Non-root images must set `container_user`
+
+Fargate mounts these ephemeral volumes **root-owned**, and gives no way to set the mount
+owner. It offers no `tmpfs` either, so a writable volume is the only option under a
+read-only root filesystem. An image that runs as a non-root user (all our Rails images
+declare `USER tariff`) therefore cannot write into its own mounted `tmp` and `log`
+directories, and crash-loops on boot with `Permission denied` — creating and `chown`ing
+those directories in the Dockerfile does **not** help, because the mount shadows them.
+
+To fix this the module prepends a small **init container** (`<service>-volume-permissions`)
+when `container_user` is set: it reuses the application image, runs as root, `chown -R`s
+the `writable_paths` mounts to `container_user`, and exits. The application container
+declares `dependsOn … condition = SUCCESS` on it, so it will not start until the chown
+has completed. The SSM agent paths are deliberately left out of this — that agent runs
+as root regardless.
+
+So for any non-root image you **must** pass `container_user` matching the image's
+runtime user, e.g.:
+
+```hcl
+writable_paths = ["/tmp", "/home/tariff/tmp", "/home/tariff/log"]
+container_user = "1000:1000"
+```
+
+Pin the id in the image (`adduser -u 1000 -g 1000 …`) so the value is stable rather than
+whatever `adduser -S` happened to pick. Leave `container_user` unset only for an image
+that genuinely runs as root — then no init container is added and root can write to the
+mounts directly.
+
+`bootsnap` (loaded in `config/boot.rb` on backend and frontend) writes to `tmp/cache`
+during boot, so the app `tmp` path is not optional for those services. The frontend runs
+from `/home/tariff`, not `/app` — check each image's `WORKDIR` rather than copying these
+values. If a service writes somewhere unexpected, add that path rather than turning the
+setting off; the failure is a clear `Read-only file system` or `Permission denied` error
+naming the path.
+
+#### Ownership of the mounts is not fully understood — verify per service
+
+Observed on frontend in development: `/home/tariff/tmp` and `/home/tariff/log` came out
+owned by `container_user` (the init container's `chown` held), but `/tmp` came out
+`root:root` mode `1777` — the `chown` did not hold there, and the path works only
+because `1777` is world-writable. The `chown -R` covers all three and must have exited
+zero, or `dependsOn: SUCCESS` would have blocked the app container, so something resets
+some mounts between the init container and the app container.
+
+Until that is pinned down, **do not assume this generalises**. After enabling it on a
+service, exec in and confirm ownership and a real write:
+
+```sh
+ls -la <each writable path>
+```
+
+### Debugging a hardened container
+
+`apk add …` does not work under a read-only root filesystem, so the usual "install
+`busybox-extras` and poke around" workflow is gone. What still works:
+
+- `nc` is already in the frontend and mcp images (both use it for `HEALTHCHECK`), so
+  port probing is unaffected: `nc -z <host> <port>; echo $?`.
+- `/tmp` is writable, so anything you need to write during a session goes there — but it
+  is ephemeral and world-writable, so never put credentials in it.
+- Ruby services can use `bundle exec rails runner` / `rails console` for anything that
+  would otherwise need a new binary.
+- If you genuinely need a package, redeploy the service with
+  `readonly_root_filesystem = false` for the duration of the investigation rather than
+  fighting the mount.
+
+## Upgrading
+
+`readonly_root_filesystem` defaults to `false`, so bumping the pinned `ref` does not
+change behaviour on its own. Enable it per service:
+
+1. Pin a fixed uid/gid in the image if it runs non-root, rebuild and deploy it.
+2. Bump the ref and set `readonly_root_filesystem = true`, `writable_paths` for the
+   image's `WORKDIR`, and `container_user` to its uid/gid.
+3. Confirm a steady state, the ownership check above, **and** a working
+   `execute-command` in development and staging before production.
+
+Start with a low-traffic service (`mcp`, `dev-hub`) rather than backend — backend
+instantiates this module five times (uk/xi/job/workers) and is the riskiest consumer.
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
@@ -12,7 +148,7 @@
 
 | Name | Version |
 | ---- | ------- |
-| <a name="provider_aws"></a> [aws](#provider\_aws) | ~> 5 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.100.0 |
 
 ## Modules
 
@@ -54,6 +190,7 @@ No modules.
 | <a name="input_container_definition_kind"></a> [container\_definition\_kind](#input\_container\_definition\_kind) | The kind of task to run.<br/><br/>  Can be either `job` or `web`. Defaults to `web`.<br/><br/>  - `web` - A task that runs a web service and is backed by a load balancer.<br/>  - `job` - A task that runs any arbitrary job with the priveleges of the task role and stops. | `string` | `"web"` | no |
 | <a name="input_container_entrypoint"></a> [container\_entrypoint](#input\_container\_entrypoint) | String array representing the entrypoint of the container. Supply to override the Dockerfile. Defaults to `null`, that is, not overriding the Dockerfile. | `list(string)` | `null` | no |
 | <a name="input_container_port"></a> [container\_port](#input\_container\_port) | Port the container should expose. | `number` | `80` | no |
+| <a name="input_container_user"></a> [container\_user](#input\_container\_user) | The user the container process runs as, in any form the ECS `user` field accepts<br/>  (`user`, `uid`, `user:group`, `uid:gid`). Defaults to `null`, deferring to the<br/>  `USER` directive in the image's Dockerfile.<br/><br/>  Set this when the image has no `USER` directive, so the task is never recorded as<br/>  running as root.<br/><br/>  It is also REQUIRED when `readonly_root_filesystem` is true and the image runs as a<br/>  non-root user: Fargate mounts the writable volumes root-owned, so the module adds an<br/>  init container that chowns them to this user before the app container starts. Without<br/>  it, a non-root app crash-loops on boot with `Permission denied`. Prefer `uid:gid`<br/>  form and pin the ids in the image so the value cannot drift. See the module README. | `string` | `null` | no |
 | <a name="input_cpu"></a> [cpu](#input\_cpu) | CPU limits for container. | `number` | `256` | no |
 | <a name="input_cpu_alarm_threshold"></a> [cpu\_alarm\_threshold](#input\_cpu\_alarm\_threshold) | CPU % at which to alarm — should be ~25% above autoscaling target | `number` | `null` | no |
 | <a name="input_deployment_maximum_percent"></a> [deployment\_maximum\_percent](#input\_deployment\_maximum\_percent) | Maximum deployment as a percentage of `service_count`. Defaults to 200 for zero downtime deploys.. | `number` | `200` | no |
@@ -71,6 +208,7 @@ No modules.
 | <a name="input_min_capacity"></a> [min\_capacity](#input\_min\_capacity) | A minimum capacity for autoscaling. Defaults to 1. | `number` | `1` | no |
 | <a name="input_observability_sns_topic_arns"></a> [observability\_sns\_topic\_arns](#input\_observability\_sns\_topic\_arns) | SNS topic ARNs for lower-urgency observability alarms (high CPU) | `list(string)` | `null` | no |
 | <a name="input_private_dns_namespace"></a> [private\_dns\_namespace](#input\_private\_dns\_namespace) | Private DNS namespace name. If provided, enables service discovery. | `string` | `null` | no |
+| <a name="input_readonly_root_filesystem"></a> [readonly\_root\_filesystem](#input\_readonly\_root\_filesystem) | Whether the container's root filesystem is mounted read-only. Defaults to `false`.<br/><br/>  Satisfies Security Hub control ECS.5 ("ECS containers should be limited to read-only<br/>  access to root filesystems"). It stops a threat actor who exploits a vulnerability in<br/>  the image from tampering with the image's own binaries and config, and confines any<br/>  write to the paths declared in `writable_paths` — which are ephemeral, so nothing<br/>  survives the task. It does NOT restrict access to the host filesystem, and it does not<br/>  prevent a payload being written to and run from a writable path such as `/tmp`.<br/><br/>  Defaults to `false` because the module cannot know which paths a given image writes<br/>  to: enabling it without the matching `writable_paths` and `container_user` will<br/>  crash-loop the service on boot, or break it later at runtime. Opt in per service, and<br/>  verify in development first — see the module README. | `bool` | `false` | no |
 | <a name="input_region"></a> [region](#input\_region) | AWS region. | `string` | n/a | yes |
 | <a name="input_scale_in_cooldown"></a> [scale\_in\_cooldown](#input\_scale\_in\_cooldown) | Prevents aggressive scale-in by enforcing a waiting period after tasks are removed. | `number` | `300` | no |
 | <a name="input_scale_out_cooldown"></a> [scale\_out\_cooldown](#input\_scale\_out\_cooldown) | Minimum time to wait after a scale-out before allowing another scale-out, giving new tasks time to start contributing capacity. | `number` | `60` | no |
@@ -90,6 +228,7 @@ No modules.
 | <a name="input_task_role_policy_arns"></a> [task\_role\_policy\_arns](#input\_task\_role\_policy\_arns) | A list of additional policy ARNs to attach to the service's task role. | `list(string)` | `[]` | no |
 | <a name="input_timeout"></a> [timeout](#input\_timeout) | Timeout time for the ECS service to become stable before producing a Terraform error. | `string` | `"15m"` | no |
 | <a name="input_wait_for_steady_state"></a> [wait\_for\_steady\_state](#input\_wait\_for\_steady\_state) | Whether to wait for the service to become stable akin to `aws ecs wait services-stable`. Defaults to true. | `bool` | `true` | no |
+| <a name="input_writable_paths"></a> [writable\_paths](#input\_writable\_paths) | Absolute container paths that must stay writable when `readonly_root_filesystem` is<br/>  enabled. Each path is backed by an ephemeral Fargate volume mounted at that path.<br/><br/>  Defaults to `["/tmp"]`. Rails services typically need their app tmp and log<br/>  directories too, e.g. `["/tmp", "/app/tmp", "/app/log"]`. Check the image's `WORKDIR`<br/>  rather than assuming `/app`. | `list(string)` | <pre>[<br/>  "/tmp"<br/>]</pre> | no |
 
 ## Outputs
 
