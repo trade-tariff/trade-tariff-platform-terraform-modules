@@ -340,6 +340,24 @@ variable "writable_paths" {
     ])) == length(var.writable_paths)
     error_message = "Two entries in writable_paths derive the same volume name once '/' and unsupported characters are replaced with '-'. Rename or drop one of them."
   }
+
+  # The check above only sees this variable, but with ECS Exec enabled the module also
+  # adds `local.ecs_exec_writable_paths` for the SSM agent. A caller path that folds to
+  # one of those volume names (e.g. '/var/log/amazon-ssm') is a different string, so it
+  # survives the `distinct` in locals.tf and then fails as an opaque duplicate-key error
+  # pointing at module internals. Reject it here instead, while still allowing the
+  # built-in paths to be listed verbatim — those dedupe cleanly.
+  # Keep both lists in step with `ecs_exec_writable_paths` in locals.tf.
+  validation {
+    condition = !(var.enable_ecs_exec && var.readonly_root_filesystem) || alltrue([
+      for path in var.writable_paths :
+      !contains(
+        ["var-lib-amazon-ssm", "var-log-amazon-ssm", "managed-agents"],
+        lower(replace(trim(path, "/"), "/[^a-zA-Z0-9_-]+/", "-"))
+      ) || contains(["/var/lib/amazon/ssm", "/var/log/amazon/ssm", "/managed-agents"], path)
+    ])
+    error_message = "An entry in writable_paths derives the same volume name as one of the ECS Exec paths the module mounts itself ('/var/lib/amazon/ssm', '/var/log/amazon/ssm', '/managed-agents'). Rename it, or use the built-in path verbatim if that is what you meant."
+  }
 }
 
 variable "container_user" {
