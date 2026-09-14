@@ -92,6 +92,8 @@ locals {
     entryPoint = ["/bin/sh", "-c"]
     command    = ["chown -R ${var.container_user} ${join(" ", values(local.app_writable_volumes))}"]
 
+    readonlyRootFilesystem = var.readonly_root_filesystem
+
     mountPoints = [
       for name, path in local.app_writable_volumes : {
         sourceVolume  = name

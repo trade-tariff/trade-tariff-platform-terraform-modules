@@ -69,7 +69,9 @@ when `container_user` is set: it reuses the application image, runs as root, `ch
 the `writable_paths` mounts to `container_user`, and exits. The application container
 declares `dependsOn … condition = SUCCESS` on it, so it will not start until the chown
 has completed. The SSM agent paths are deliberately left out of this — that agent runs
-as root regardless.
+as root regardless. The init container itself also gets `readonlyRootFilesystem` set to
+match — it only ever writes to the mounted volumes, never its own root fs — since ECS.5
+fails a task definition if *any* container in it lacks read-only root.
 
 So for any non-root image you **must** pass `container_user` matching the image's
 runtime user, e.g.:
