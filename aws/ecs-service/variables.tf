@@ -309,3 +309,99 @@ variable "container_health_check" {
   })
   default = null
 }
+
+variable "readonly_root_filesystem" {
+  description = <<EOT
+  Whether the container's root filesystem is mounted read-only. Defaults to `false`.
+
+  Satisfies Security Hub control ECS.5 ("ECS containers should be limited to read-only
+  access to root filesystems"). It stops a threat actor who exploits a vulnerability in
+  the image from tampering with the image's own binaries and config, and confines any
+  write to the paths declared in `writable_paths` — which are ephemeral, so nothing
+  survives the task. It does NOT restrict access to the host filesystem, and it does not
+  prevent a payload being written to and run from a writable path such as `/tmp`.
+
+  Defaults to `false` because the module cannot know which paths a given image writes
+  to: enabling it without the matching `writable_paths` and `container_user` will
+  crash-loop the service on boot, or break it later at runtime. Opt in per service, and
+  verify in development first — see the module README.
+  EOT
+  type        = bool
+  default     = false
+}
+
+variable "writable_paths" {
+  description = <<EOT
+  Absolute container paths that must stay writable when `readonly_root_filesystem` is
+  enabled. Each path is backed by an ephemeral Fargate volume mounted at that path.
+
+  Defaults to `["/tmp"]`. Rails services typically need their app tmp and log
+  directories too, e.g. `["/tmp", "/app/tmp", "/app/log"]`. Check the image's `WORKDIR`
+  rather than assuming `/app`.
+  EOT
+  type        = list(string)
+  default     = ["/tmp"]
+
+  validation {
+    condition     = alltrue([for path in var.writable_paths : startswith(path, "/")])
+    error_message = "Every entry in writable_paths must be an absolute path beginning with '/'."
+  }
+
+  validation {
+    condition     = alltrue([for path in var.writable_paths : trim(path, "/") != ""])
+    error_message = "writable_paths cannot contain the root path '/': mounting a volume over '/' would mask the image filesystem."
+  }
+
+  validation {
+    condition     = alltrue([for path in var.writable_paths : !endswith(path, "/")])
+    error_message = "Entries in writable_paths must not have a trailing slash, so that '/app/tmp' and '/app/tmp/' cannot become two volumes for the same mount point."
+  }
+
+  # Volume names are derived from the path (see locals.tf). Distinct paths can collide
+  # once separators and unsupported characters are folded to '-' (e.g. '/app/tmp' and
+  # '/app-tmp'), which would otherwise surface as an opaque duplicate-key error.
+  validation {
+    condition = length(distinct([
+      for path in var.writable_paths :
+      lower(replace(trim(path, "/"), "/[^a-zA-Z0-9_-]+/", "-"))
+    ])) == length(var.writable_paths)
+    error_message = "Two entries in writable_paths derive the same volume name once '/' and unsupported characters are replaced with '-'. Rename or drop one of them."
+  }
+
+  # The check above only sees this variable, but with ECS Exec enabled the module also
+  # adds `local.ecs_exec_writable_paths` for the SSM agent. A caller path that folds to
+  # one of those volume names (e.g. '/var/log/amazon-ssm') is a different string, so it
+  # survives the `distinct` in locals.tf and then fails as an opaque duplicate-key error
+  # pointing at module internals. Reject it here instead, while still allowing the
+  # built-in paths to be listed verbatim — those dedupe cleanly.
+  # Keep both lists in step with `ecs_exec_writable_paths` in locals.tf.
+  validation {
+    condition = !(var.enable_ecs_exec && var.readonly_root_filesystem) || alltrue([
+      for path in var.writable_paths :
+      !contains(
+        ["var-lib-amazon-ssm", "var-log-amazon-ssm", "managed-agents"],
+        lower(replace(trim(path, "/"), "/[^a-zA-Z0-9_-]+/", "-"))
+      ) || contains(["/var/lib/amazon/ssm", "/var/log/amazon/ssm", "/managed-agents"], path)
+    ])
+    error_message = "An entry in writable_paths derives the same volume name as one of the ECS Exec paths the module mounts itself ('/var/lib/amazon/ssm', '/var/log/amazon/ssm', '/managed-agents'). Rename it, or use the built-in path verbatim if that is what you meant."
+  }
+}
+
+variable "container_user" {
+  description = <<EOT
+  The user the container process runs as, in any form the ECS `user` field accepts
+  (`user`, `uid`, `user:group`, `uid:gid`). Defaults to `null`, deferring to the
+  `USER` directive in the image's Dockerfile.
+
+  Set this when the image has no `USER` directive, so the task is never recorded as
+  running as root.
+
+  It is also REQUIRED when `readonly_root_filesystem` is true and the image runs as a
+  non-root user: Fargate mounts the writable volumes root-owned, so the module adds an
+  init container that chowns them to this user before the app container starts. Without
+  it, a non-root app crash-loops on boot with `Permission denied`. Prefer `uid:gid`
+  form and pin the ids in the image so the value cannot drift. See the module README.
+  EOT
+  type        = string
+  default     = null
+}
