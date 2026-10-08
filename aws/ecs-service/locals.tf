@@ -190,6 +190,8 @@ locals {
 
   autoscaling_metrics = var.has_autoscaler ? var.autoscaling_metrics : {}
 
+  cpu_step_scaling_enabled = var.has_autoscaler && local.service_exists && var.cpu_step_scaling != null
+
 
   ecs_capacity_loss_topic_arns = coalesce(var.ecs_capacity_loss_topic_arns, var.sns_topic_arns)
 

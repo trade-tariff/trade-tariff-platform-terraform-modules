@@ -135,6 +135,27 @@ variable "scale_out_cooldown" {
   default     = 60
 }
 
+variable "cpu_step_scaling" {
+  description = <<EOT
+(Optional) Fast CPU scale-out in addition to target tracking. When set, a
+CloudWatch alarm watches the service average CPU over one 60 second period.
+When CPU is at or above `threshold`, a step scaling policy adds
+`scaling_adjustment` tasks, then waits `cooldown` seconds before it can add
+more. Target tracking still handles scale-in. Requires `has_autoscaler`.
+EOT
+  type = object({
+    threshold          = number
+    scaling_adjustment = number
+    cooldown           = optional(number, 60)
+  })
+  default = null
+
+  validation {
+    condition     = var.cpu_step_scaling == null || try(var.cpu_step_scaling.scaling_adjustment >= 1, false)
+    error_message = "cpu_step_scaling.scaling_adjustment must be 1 or more."
+  }
+}
+
 variable "scheduled_actions_enabled" {
   description = "Enables scheduled scaling to proactively increase or reduce capacity during predictable traffic patterns."
   type        = bool

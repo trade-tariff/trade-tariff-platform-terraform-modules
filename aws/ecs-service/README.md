@@ -160,9 +160,11 @@ No modules.
 
 | Name | Type |
 | ---- | ---- |
+| [aws_appautoscaling_policy.cpu_step_scale_out](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_policy) | resource |
 | [aws_appautoscaling_policy.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_policy) | resource |
 | [aws_appautoscaling_scheduled_action.scheduled](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_scheduled_action) | resource |
 | [aws_appautoscaling_target.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_target) | resource |
+| [aws_cloudwatch_metric_alarm.cpu_step_scale_out](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
 | [aws_cloudwatch_metric_alarm.ecs_capacity_loss](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
 | [aws_cloudwatch_metric_alarm.ecs_high_cpu](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
 | [aws_cloudwatch_metric_alarm.service_count](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
@@ -196,6 +198,7 @@ No modules.
 | <a name="input_container_user"></a> [container\_user](#input\_container\_user) | The user the container process runs as, in any form the ECS `user` field accepts<br/>  (`user`, `uid`, `user:group`, `uid:gid`). Defaults to `null`, deferring to the<br/>  `USER` directive in the image's Dockerfile.<br/><br/>  Set this when the image has no `USER` directive, so the task is never recorded as<br/>  running as root.<br/><br/>  It is also REQUIRED when `readonly_root_filesystem` is true and the image runs as a<br/>  non-root user: Fargate mounts the writable volumes root-owned, so the module adds an<br/>  init container that chowns them to this user before the app container starts. Without<br/>  it, a non-root app crash-loops on boot with `Permission denied`. Prefer `uid:gid`<br/>  form and pin the ids in the image so the value cannot drift. See the module README. | `string` | `null` | no |
 | <a name="input_cpu"></a> [cpu](#input\_cpu) | CPU limits for container. | `number` | `256` | no |
 | <a name="input_cpu_alarm_threshold"></a> [cpu\_alarm\_threshold](#input\_cpu\_alarm\_threshold) | CPU % at which to alarm — should be ~25% above autoscaling target | `number` | `null` | no |
+| <a name="input_cpu_step_scaling"></a> [cpu\_step\_scaling](#input\_cpu\_step\_scaling) | (Optional) Fast CPU scale-out in addition to target tracking. When set, a<br/>CloudWatch alarm watches the service average CPU over one 60 second period.<br/>When CPU is at or above `threshold`, a step scaling policy adds<br/>`scaling_adjustment` tasks, then waits `cooldown` seconds before it can add<br/>more. Target tracking still handles scale-in. Requires `has_autoscaler`. | <pre>object({<br/>    threshold          = number<br/>    scaling_adjustment = number<br/>    cooldown           = optional(number, 60)<br/>  })</pre> | `null` | no |
 | <a name="input_deployment_maximum_percent"></a> [deployment\_maximum\_percent](#input\_deployment\_maximum\_percent) | Maximum deployment as a percentage of `service_count`. Defaults to 200 for zero downtime deploys.. | `number` | `200` | no |
 | <a name="input_deployment_minimum_healthy_percent"></a> [deployment\_minimum\_healthy\_percent](#input\_deployment\_minimum\_healthy\_percent) | Minimum healthy percentage for a deployment. Defaults to 100 for zero downtime deploys. | `number` | `100` | no |
 | <a name="input_docker_image"></a> [docker\_image](#input\_docker\_image) | Base docker image to use. | `string` | n/a | yes |
