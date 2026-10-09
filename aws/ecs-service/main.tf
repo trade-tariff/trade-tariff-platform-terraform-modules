@@ -120,6 +120,58 @@ resource "aws_appautoscaling_policy" "this" {
   depends_on = [aws_appautoscaling_target.this]
 }
 
+# Target tracking needs several minutes of high CPU before it adds tasks.
+# This step scaling policy reacts to one minute of high CPU, so the service
+# adds capacity quickly during a sudden traffic spike. Target tracking stays
+# in place and handles scale-in.
+resource "aws_appautoscaling_policy" "cpu_step_scale_out" {
+  count = local.cpu_step_scaling_enabled ? 1 : 0
+
+  name               = "${var.service_name}-cpu-step-scale-out"
+  policy_type        = "StepScaling"
+  resource_id        = aws_appautoscaling_target.this[0].resource_id
+  scalable_dimension = aws_appautoscaling_target.this[0].scalable_dimension
+  service_namespace  = aws_appautoscaling_target.this[0].service_namespace
+
+  step_scaling_policy_configuration {
+    adjustment_type         = "ChangeInCapacity"
+    cooldown                = var.cpu_step_scaling.cooldown
+    metric_aggregation_type = "Average"
+
+    step_adjustment {
+      metric_interval_lower_bound = 0
+      scaling_adjustment          = var.cpu_step_scaling.scaling_adjustment
+    }
+  }
+
+  depends_on = [aws_appautoscaling_target.this]
+}
+
+resource "aws_cloudwatch_metric_alarm" "cpu_step_scale_out" {
+  count = local.cpu_step_scaling_enabled ? 1 : 0
+
+  alarm_name        = "ecs-cpu-step-scale-out-${var.service_name}"
+  alarm_description = "Adds ${var.cpu_step_scaling.scaling_adjustment} tasks to ${var.service_name} when CPU is ${var.cpu_step_scaling.threshold}% or more for 1 minute"
+
+  namespace           = "AWS/ECS"
+  metric_name         = "CPUUtilization"
+  statistic           = "Average"
+  period              = 60
+  evaluation_periods  = 1
+  threshold           = var.cpu_step_scaling.threshold
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  treat_missing_data  = "notBreaching"
+
+  alarm_actions = [aws_appautoscaling_policy.cpu_step_scale_out[0].arn]
+
+  dimensions = {
+    ClusterName = var.cluster_name
+    ServiceName = var.service_name
+  }
+
+  tags = local.tags
+}
+
 resource "aws_appautoscaling_scheduled_action" "scheduled" {
   for_each = var.scheduled_actions_enabled && var.has_autoscaler && local.service_exists ? var.scheduled_scaling_actions : {}
 

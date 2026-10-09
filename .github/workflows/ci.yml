@@ -23,3 +23,11 @@ jobs:
     - name: terraform validate
       run: |
         for d in */ ; do (cd "$d" && terraform validate -no-color); done
+    - name: terraform test
+      run: |
+        cd aws
+        for d in */ ; do
+          if [ -d "$d/tests" ]; then
+            (cd "$d" && terraform test -no-color) || exit 1
+          fi
+        done
