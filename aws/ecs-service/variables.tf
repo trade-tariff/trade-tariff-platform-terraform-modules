@@ -142,17 +142,31 @@ CloudWatch alarm watches the service average CPU over one 60 second period.
 When CPU is at or above `threshold`, a step scaling policy adds
 `scaling_adjustment` tasks, then waits `cooldown` seconds before it can add
 more. Target tracking still handles scale-in. Requires `has_autoscaler`.
+
+`cooldown` defaults to 180 seconds. New tasks need about 1 to 3 minutes before
+they take traffic, so a shorter cooldown adds more tasks while the first ones
+are still starting.
 EOT
   type = object({
     threshold          = number
     scaling_adjustment = number
-    cooldown           = optional(number, 60)
+    cooldown           = optional(number, 180)
   })
   default = null
 
   validation {
-    condition     = var.cpu_step_scaling == null || try(var.cpu_step_scaling.scaling_adjustment >= 1, false)
-    error_message = "cpu_step_scaling.scaling_adjustment must be 1 or more."
+    condition     = var.cpu_step_scaling == null || try(var.cpu_step_scaling.scaling_adjustment >= 1 && floor(var.cpu_step_scaling.scaling_adjustment) == var.cpu_step_scaling.scaling_adjustment, false)
+    error_message = "cpu_step_scaling.scaling_adjustment must be a whole number, 1 or more."
+  }
+
+  validation {
+    condition     = var.cpu_step_scaling == null || try(var.cpu_step_scaling.threshold > 0 && var.cpu_step_scaling.threshold <= 100, false)
+    error_message = "cpu_step_scaling.threshold must be more than 0 and not more than 100."
+  }
+
+  validation {
+    condition     = var.cpu_step_scaling == null || try(var.cpu_step_scaling.cooldown >= 60, false)
+    error_message = "cpu_step_scaling.cooldown must be 60 seconds or more, because the alarm period is 60 seconds."
   }
 }
 

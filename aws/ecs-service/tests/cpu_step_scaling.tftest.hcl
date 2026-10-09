@@ -78,8 +78,8 @@ run "cpu_step_scaling_policy_adds_tasks" {
   }
 
   assert {
-    condition     = aws_appautoscaling_policy.cpu_step_scale_out[0].step_scaling_policy_configuration[0].cooldown == 60
-    error_message = "cooldown must default to 60 seconds"
+    condition     = aws_appautoscaling_policy.cpu_step_scale_out[0].step_scaling_policy_configuration[0].cooldown == 180
+    error_message = "cooldown must default to 180 seconds, so that new tasks can take traffic before the next step"
   }
 }
 
@@ -125,6 +125,75 @@ run "cpu_step_scaling_rejects_non_positive_adjustment" {
     cpu_step_scaling = {
       threshold          = 80
       scaling_adjustment = 0
+    }
+  }
+
+  expect_failures = [var.cpu_step_scaling]
+}
+
+run "cpu_step_scaling_rejects_fractional_adjustment" {
+  command = plan
+
+  variables {
+    cpu_step_scaling = {
+      threshold          = 80
+      scaling_adjustment = 1.5
+    }
+  }
+
+  expect_failures = [var.cpu_step_scaling]
+}
+
+run "cpu_step_scaling_rejects_zero_threshold" {
+  command = plan
+
+  variables {
+    cpu_step_scaling = {
+      threshold          = 0
+      scaling_adjustment = 3
+    }
+  }
+
+  expect_failures = [var.cpu_step_scaling]
+}
+
+run "cpu_step_scaling_rejects_threshold_above_100" {
+  command = plan
+
+  variables {
+    cpu_step_scaling = {
+      threshold          = 101
+      scaling_adjustment = 3
+    }
+  }
+
+  expect_failures = [var.cpu_step_scaling]
+}
+
+run "cpu_step_scaling_accepts_threshold_of_100" {
+  command = plan
+
+  variables {
+    cpu_step_scaling = {
+      threshold          = 100
+      scaling_adjustment = 3
+    }
+  }
+
+  assert {
+    condition     = aws_cloudwatch_metric_alarm.cpu_step_scale_out[0].threshold == 100
+    error_message = "a threshold of 100 must be accepted"
+  }
+}
+
+run "cpu_step_scaling_rejects_cooldown_below_60" {
+  command = plan
+
+  variables {
+    cpu_step_scaling = {
+      threshold          = 80
+      scaling_adjustment = 3
+      cooldown           = 59
     }
   }
 
