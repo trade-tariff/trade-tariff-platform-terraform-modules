@@ -11,6 +11,10 @@ resource "aws_ecs_service" "this" {
 
   enable_execute_command = var.enable_ecs_exec
 
+  # Copy the service tags to each task. Without this, Fargate task costs do not carry the tags.
+  enable_ecs_managed_tags = true
+  propagate_tags          = "SERVICE"
+
   dynamic "load_balancer" {
     for_each = local.target_group_port_mappings
     content {
