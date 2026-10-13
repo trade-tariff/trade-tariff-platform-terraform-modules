@@ -125,9 +125,16 @@ variable "autoscaling_metrics" {
 
   validation {
     condition = alltrue([
-      for m in values(var.autoscaling_metrics) : m.metric_type != "ALBRequestCountPerTarget" || try(length(m.resource_label) > 0, false)
+      for m in values(var.autoscaling_metrics) : m.metric_type != "ALBRequestCountPerTarget" || try(length(trimspace(m.resource_label)) > 0, false)
     ])
     error_message = "autoscaling_metrics with metric_type ALBRequestCountPerTarget must set resource_label."
+  }
+
+  validation {
+    condition = alltrue([
+      for m in values(var.autoscaling_metrics) : m.metric_type == "ALBRequestCountPerTarget" || m.resource_label == null
+    ])
+    error_message = "autoscaling_metrics resource_label is only valid for metric_type ALBRequestCountPerTarget."
   }
 }
 
@@ -213,9 +220,9 @@ EOT
 
   validation {
     condition = alltrue([
-      for s in values(var.metric_step_scaling) : contains(["Average", "Maximum", "Minimum", "Sum", "SampleCount"], s.statistic)
+      for s in values(var.metric_step_scaling) : contains(["Average", "Maximum", "Minimum"], s.statistic)
     ])
-    error_message = "metric_step_scaling statistic must be Average, Maximum, Minimum, Sum or SampleCount."
+    error_message = "metric_step_scaling statistic must be Average, Maximum or Minimum, because the step scaling policy aggregates the alarm data with the same statistic."
   }
 
   validation {

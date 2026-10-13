@@ -183,7 +183,7 @@ resource "aws_cloudwatch_metric_alarm" "cpu_step_scale_out" {
 resource "aws_appautoscaling_policy" "metric_step_scale_out" {
   for_each = local.metric_step_scaling
 
-  name               = "${var.service_name}-${each.key}-step-scale-out"
+  name               = "${var.service_name}-metric-${each.key}-step-scale-out"
   policy_type        = "StepScaling"
   resource_id        = aws_appautoscaling_target.this[0].resource_id
   scalable_dimension = aws_appautoscaling_target.this[0].scalable_dimension
@@ -192,7 +192,7 @@ resource "aws_appautoscaling_policy" "metric_step_scale_out" {
   step_scaling_policy_configuration {
     adjustment_type         = "ChangeInCapacity"
     cooldown                = each.value.cooldown
-    metric_aggregation_type = each.value.statistic == "Maximum" ? "Maximum" : each.value.statistic == "Minimum" ? "Minimum" : "Average"
+    metric_aggregation_type = each.value.statistic
 
     step_adjustment {
       metric_interval_lower_bound = 0
@@ -206,7 +206,7 @@ resource "aws_appautoscaling_policy" "metric_step_scale_out" {
 resource "aws_cloudwatch_metric_alarm" "metric_step_scale_out" {
   for_each = local.metric_step_scaling
 
-  alarm_name        = "ecs-${each.key}-step-scale-out-${var.service_name}"
+  alarm_name        = "ecs-metric-${each.key}-step-scale-out-${var.service_name}"
   alarm_description = "Adds ${each.value.scaling_adjustment} tasks to ${var.service_name} when ${each.value.namespace} ${each.value.metric_name} (${each.value.statistic}) is ${each.value.threshold} or more"
 
   namespace           = each.value.namespace

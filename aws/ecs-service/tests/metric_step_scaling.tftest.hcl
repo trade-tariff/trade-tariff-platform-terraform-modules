@@ -241,3 +241,87 @@ run "cpu_target_tracking_without_resource_label_is_unchanged" {
     error_message = "CPU target tracking must not set a resource_label"
   }
 }
+
+run "metric_step_scaling_cpu_key_does_not_clash_with_cpu_step_scaling" {
+  command = plan
+
+  variables {
+    cpu_step_scaling = {
+      threshold          = 90
+      scaling_adjustment = 3
+    }
+    metric_step_scaling = {
+      cpu = {
+        namespace          = "AWS/ECS"
+        metric_name        = "CPUUtilization"
+        statistic          = "Maximum"
+        dimensions         = { ClusterName = "trade-tariff-cluster-test", ServiceName = "frontend" }
+        threshold          = 95
+        scaling_adjustment = 2
+      }
+    }
+  }
+
+  assert {
+    condition     = aws_appautoscaling_policy.metric_step_scale_out["cpu"].name != aws_appautoscaling_policy.cpu_step_scale_out[0].name
+    error_message = "a metric_step_scaling entry named cpu must not reuse the cpu_step_scaling policy name"
+  }
+
+  assert {
+    condition     = aws_cloudwatch_metric_alarm.metric_step_scale_out["cpu"].alarm_name != aws_cloudwatch_metric_alarm.cpu_step_scale_out[0].alarm_name
+    error_message = "a metric_step_scaling entry named cpu must not reuse the cpu_step_scaling alarm name"
+  }
+}
+
+run "metric_step_scaling_rejects_sum_statistic" {
+  command = plan
+
+  variables {
+    metric_step_scaling = {
+      requests = {
+        namespace          = "AWS/ApplicationELB"
+        metric_name        = "RequestCount"
+        statistic          = "Sum"
+        dimensions         = {}
+        threshold          = 1000
+        scaling_adjustment = 3
+      }
+    }
+  }
+
+  expect_failures = [var.metric_step_scaling]
+}
+
+run "cpu_target_tracking_rejects_resource_label" {
+  command = plan
+
+  variables {
+    metric_step_scaling = {}
+    autoscaling_metrics = {
+      cpu = {
+        metric_type    = "ECSServiceAverageCPUUtilization"
+        target_value   = 50
+        resource_label = "app/test-alb/abc123/targetgroup/frontend-https/def456"
+      }
+    }
+  }
+
+  expect_failures = [var.autoscaling_metrics]
+}
+
+run "alb_request_count_target_tracking_rejects_blank_resource_label" {
+  command = plan
+
+  variables {
+    metric_step_scaling = {}
+    autoscaling_metrics = {
+      requests = {
+        metric_type    = "ALBRequestCountPerTarget"
+        target_value   = 1000
+        resource_label = "   "
+      }
+    }
+  }
+
+  expect_failures = [var.autoscaling_metrics]
+}
