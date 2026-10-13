@@ -106,10 +106,11 @@ variable "min_capacity" {
 }
 
 variable "autoscaling_metrics" {
-  description = "A map of autoscaling metrics."
+  description = "A map of autoscaling metrics. `resource_label` is required for `ALBRequestCountPerTarget`, in the form `app/<load-balancer-name>/<id>/targetgroup/<target-group-name>/<id>`."
   type = map(object({
-    metric_type  = string
-    target_value = number
+    metric_type    = string
+    target_value   = number
+    resource_label = optional(string)
   }))
   default = {
     cpu = {
@@ -120,6 +121,20 @@ variable "autoscaling_metrics" {
       metric_type  = "ECSServiceAverageMemoryUtilization"
       target_value = 70
     }
+  }
+
+  validation {
+    condition = alltrue([
+      for m in values(var.autoscaling_metrics) : m.metric_type != "ALBRequestCountPerTarget" || try(length(trimspace(m.resource_label)) > 0, false)
+    ])
+    error_message = "autoscaling_metrics with metric_type ALBRequestCountPerTarget must set resource_label."
+  }
+
+  validation {
+    condition = alltrue([
+      for m in values(var.autoscaling_metrics) : m.metric_type == "ALBRequestCountPerTarget" || m.resource_label == null
+    ])
+    error_message = "autoscaling_metrics resource_label is only valid for metric_type ALBRequestCountPerTarget."
   }
 }
 
@@ -167,6 +182,68 @@ EOT
   validation {
     condition     = var.cpu_step_scaling == null || try(var.cpu_step_scaling.cooldown >= 60, false)
     error_message = "cpu_step_scaling.cooldown must be 60 seconds or more, because the alarm period is 60 seconds."
+  }
+}
+
+variable "metric_step_scaling" {
+  description = <<EOT
+(Optional) Fast scale-out on any CloudWatch metric, in addition to target
+tracking. Each entry makes a CloudWatch alarm on the metric and a step scaling
+policy. When the metric is at or above `threshold` for `evaluation_periods`
+periods of `period` seconds, the policy adds `scaling_adjustment` tasks, then
+waits `cooldown` seconds before it can add more. Missing data does not breach
+the threshold. Target tracking still handles scale-in. Requires
+`has_autoscaler`.
+
+Use it for metrics that show queueing before CPU does, for example the Puma
+backlog with the `Maximum` statistic.
+EOT
+  type = map(object({
+    namespace          = string
+    metric_name        = string
+    statistic          = string
+    dimensions         = map(string)
+    threshold          = number
+    scaling_adjustment = number
+    period             = optional(number, 60)
+    evaluation_periods = optional(number, 1)
+    cooldown           = optional(number, 180)
+  }))
+  default = {}
+
+  validation {
+    condition = alltrue([
+      for s in values(var.metric_step_scaling) : s.scaling_adjustment >= 1 && floor(s.scaling_adjustment) == s.scaling_adjustment
+    ])
+    error_message = "metric_step_scaling scaling_adjustment must be a whole number, 1 or more."
+  }
+
+  validation {
+    condition = alltrue([
+      for s in values(var.metric_step_scaling) : contains(["Average", "Maximum", "Minimum"], s.statistic)
+    ])
+    error_message = "metric_step_scaling statistic must be Average, Maximum or Minimum, because the step scaling policy aggregates the alarm data with the same statistic."
+  }
+
+  validation {
+    condition = alltrue([
+      for s in values(var.metric_step_scaling) : s.period >= 60 && s.period % 60 == 0
+    ])
+    error_message = "metric_step_scaling period must be a multiple of 60 seconds."
+  }
+
+  validation {
+    condition = alltrue([
+      for s in values(var.metric_step_scaling) : s.evaluation_periods >= 1 && floor(s.evaluation_periods) == s.evaluation_periods
+    ])
+    error_message = "metric_step_scaling evaluation_periods must be a whole number, 1 or more."
+  }
+
+  validation {
+    condition = alltrue([
+      for s in values(var.metric_step_scaling) : s.cooldown >= 60
+    ])
+    error_message = "metric_step_scaling cooldown must be 60 seconds or more."
   }
 }
 
