@@ -115,6 +115,7 @@ resource "aws_appautoscaling_policy" "this" {
   target_tracking_scaling_policy_configuration {
     predefined_metric_specification {
       predefined_metric_type = each.value.metric_type
+      resource_label         = each.value.resource_label
     }
     target_value       = each.value.target_value
     scale_in_cooldown  = var.scale_in_cooldown
@@ -172,6 +173,54 @@ resource "aws_cloudwatch_metric_alarm" "cpu_step_scale_out" {
     ClusterName = var.cluster_name
     ServiceName = var.service_name
   }
+
+  tags = local.tags
+}
+
+# The same fast scale-out as cpu_step_scale_out, on any CloudWatch metric.
+# Average CPU can stay low while one task is full and requests queue, so a
+# queue metric such as the Puma backlog reacts when CPU does not.
+resource "aws_appautoscaling_policy" "metric_step_scale_out" {
+  for_each = local.metric_step_scaling
+
+  name               = "${var.service_name}-${each.key}-step-scale-out"
+  policy_type        = "StepScaling"
+  resource_id        = aws_appautoscaling_target.this[0].resource_id
+  scalable_dimension = aws_appautoscaling_target.this[0].scalable_dimension
+  service_namespace  = aws_appautoscaling_target.this[0].service_namespace
+
+  step_scaling_policy_configuration {
+    adjustment_type         = "ChangeInCapacity"
+    cooldown                = each.value.cooldown
+    metric_aggregation_type = each.value.statistic == "Maximum" ? "Maximum" : each.value.statistic == "Minimum" ? "Minimum" : "Average"
+
+    step_adjustment {
+      metric_interval_lower_bound = 0
+      scaling_adjustment          = each.value.scaling_adjustment
+    }
+  }
+
+  depends_on = [aws_appautoscaling_target.this]
+}
+
+resource "aws_cloudwatch_metric_alarm" "metric_step_scale_out" {
+  for_each = local.metric_step_scaling
+
+  alarm_name        = "ecs-${each.key}-step-scale-out-${var.service_name}"
+  alarm_description = "Adds ${each.value.scaling_adjustment} tasks to ${var.service_name} when ${each.value.namespace} ${each.value.metric_name} (${each.value.statistic}) is ${each.value.threshold} or more"
+
+  namespace           = each.value.namespace
+  metric_name         = each.value.metric_name
+  statistic           = each.value.statistic
+  period              = each.value.period
+  evaluation_periods  = each.value.evaluation_periods
+  threshold           = each.value.threshold
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  treat_missing_data  = "notBreaching"
+
+  alarm_actions = [aws_appautoscaling_policy.metric_step_scale_out[each.key].arn]
+
+  dimensions = each.value.dimensions
 
   tags = local.tags
 }

@@ -161,12 +161,14 @@ No modules.
 | Name | Type |
 | ---- | ---- |
 | [aws_appautoscaling_policy.cpu_step_scale_out](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_policy) | resource |
+| [aws_appautoscaling_policy.metric_step_scale_out](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_policy) | resource |
 | [aws_appautoscaling_policy.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_policy) | resource |
 | [aws_appautoscaling_scheduled_action.scheduled](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_scheduled_action) | resource |
 | [aws_appautoscaling_target.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_target) | resource |
 | [aws_cloudwatch_metric_alarm.cpu_step_scale_out](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
 | [aws_cloudwatch_metric_alarm.ecs_capacity_loss](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
 | [aws_cloudwatch_metric_alarm.ecs_high_cpu](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
+| [aws_cloudwatch_metric_alarm.metric_step_scale_out](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
 | [aws_cloudwatch_metric_alarm.service_count](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_metric_alarm) | resource |
 | [aws_ecs_service.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_service) | resource |
 | [aws_ecs_task_definition.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_task_definition) | resource |
@@ -187,7 +189,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 | ---- | ----------- | ---- | ------- | :------: |
-| <a name="input_autoscaling_metrics"></a> [autoscaling\_metrics](#input\_autoscaling\_metrics) | A map of autoscaling metrics. | <pre>map(object({<br/>    metric_type  = string<br/>    target_value = number<br/>  }))</pre> | <pre>{<br/>  "cpu": {<br/>    "metric_type": "ECSServiceAverageCPUUtilization",<br/>    "target_value": 55<br/>  },<br/>  "memory": {<br/>    "metric_type": "ECSServiceAverageMemoryUtilization",<br/>    "target_value": 70<br/>  }<br/>}</pre> | no |
+| <a name="input_autoscaling_metrics"></a> [autoscaling\_metrics](#input\_autoscaling\_metrics) | A map of autoscaling metrics. `resource_label` is required for `ALBRequestCountPerTarget`, in the form `app/<load-balancer-name>/<id>/targetgroup/<target-group-name>/<id>`. | <pre>map(object({<br/>    metric_type    = string<br/>    target_value   = number<br/>    resource_label = optional(string)<br/>  }))</pre> | <pre>{<br/>  "cpu": {<br/>    "metric_type": "ECSServiceAverageCPUUtilization",<br/>    "target_value": 55<br/>  },<br/>  "memory": {<br/>    "metric_type": "ECSServiceAverageMemoryUtilization",<br/>    "target_value": 70<br/>  }<br/>}</pre> | no |
 | <a name="input_cloudwatch_log_group_name"></a> [cloudwatch\_log\_group\_name](#input\_cloudwatch\_log\_group\_name) | CloudWatch log group to use with the service. | `string` | n/a | yes |
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | Name of the ECS Cluster to deploy the service into. | `string` | n/a | yes |
 | <a name="input_container_command"></a> [container\_command](#input\_container\_command) | String array representing the command to run in the container. First argument should be the shell to use, if required. Defaults to `null`, that is, no command override. | `list(string)` | `null` | no |
@@ -211,6 +213,7 @@ No modules.
 | <a name="input_has_autoscaler"></a> [has\_autoscaler](#input\_has\_autoscaler) | Whether the service has an autoscaler. Defaults to `false`. | `bool` | `true` | no |
 | <a name="input_max_capacity"></a> [max\_capacity](#input\_max\_capacity) | A maximum capacity for autoscaling. | `number` | n/a | yes |
 | <a name="input_memory"></a> [memory](#input\_memory) | Memory limits for container. | `number` | `512` | no |
+| <a name="input_metric_step_scaling"></a> [metric\_step\_scaling](#input\_metric\_step\_scaling) | (Optional) Fast scale-out on any CloudWatch metric, in addition to target<br/>tracking. Each entry makes a CloudWatch alarm on the metric and a step scaling<br/>policy. When the metric is at or above `threshold` for `evaluation_periods`<br/>periods of `period` seconds, the policy adds `scaling_adjustment` tasks, then<br/>waits `cooldown` seconds before it can add more. Missing data does not breach<br/>the threshold. Target tracking still handles scale-in. Requires<br/>`has_autoscaler`.<br/><br/>Use it for metrics that show queueing before CPU does, for example the Puma<br/>backlog with the `Maximum` statistic. | <pre>map(object({<br/>    namespace          = string<br/>    metric_name        = string<br/>    statistic          = string<br/>    dimensions         = map(string)<br/>    threshold          = number<br/>    scaling_adjustment = number<br/>    period             = optional(number, 60)<br/>    evaluation_periods = optional(number, 1)<br/>    cooldown           = optional(number, 180)<br/>  }))</pre> | `{}` | no |
 | <a name="input_min_capacity"></a> [min\_capacity](#input\_min\_capacity) | A minimum capacity for autoscaling. Defaults to 1. | `number` | `1` | no |
 | <a name="input_observability_sns_topic_arns"></a> [observability\_sns\_topic\_arns](#input\_observability\_sns\_topic\_arns) | SNS topic ARNs for lower-urgency observability alarms (high CPU) | `list(string)` | `null` | no |
 | <a name="input_private_dns_namespace"></a> [private\_dns\_namespace](#input\_private\_dns\_namespace) | Private DNS namespace name. If provided, enables service discovery. | `string` | `null` | no |
