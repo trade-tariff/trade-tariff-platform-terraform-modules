@@ -20,6 +20,7 @@
 
   outputs =
     {
+      self,
       nixpkgs,
       flake-utils,
       pre-commit-hooks,
@@ -135,6 +136,11 @@
         '';
       in
       {
+        devShells.review = import ./nix/review.nix {
+          inherit pkgs;
+          baseShell = self.devShells.${system}.default;
+        };
+
         devShells.default = pkgs.mkShell {
           buildInputs =
             preCommitCheck.enabledPackages
