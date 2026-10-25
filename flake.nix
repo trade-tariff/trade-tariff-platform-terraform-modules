@@ -48,6 +48,42 @@
 
         update-providers = pkgs.writeShellScriptBin "update-providers" "clean && init";
 
+        reviewTestMode = pkgs.writeShellApplication {
+          name = "review-check-test-mode";
+          runtimeInputs = [ (pkgs.python3.withPackages (ps: [ ps.python-hcl2 ])) ];
+          text = ''
+            python3 - "$@" <<'PY'
+            import json
+            import sys
+            from pathlib import Path
+            import hcl2
+
+            root = Path(sys.argv[1])
+            paths = sorted(root.glob("*.tftest.*")) + sorted((root / "tests").rglob("*.tftest.*"))
+            count = 0
+            for path in paths:
+                with path.open() as stream:
+                    if path.suffix == ".hcl":
+                        data = hcl2.load(stream)
+                    elif path.suffix == ".json":
+                        data = json.load(stream)
+                    else:
+                        raise SystemExit(f"Unsupported Terraform test file: {path}")
+                groups = data.get("run", [])
+                if isinstance(groups, dict):
+                    groups = [groups]
+                for group in groups:
+                    for name, run in group.items():
+                        if not isinstance(run, dict) or run.get("command") not in ("plan", "''${plan}"):
+                            raise SystemExit(f"Terraform test requires explicit command = plan: {path}:{name}")
+                        count += 1
+            if not count:
+                raise SystemExit(f"No Terraform test runs found: {root}")
+            print(f"Checked {count} plan-only Terraform test runs.")
+            PY
+          '';
+        };
+
         reviewEnvironment = ''
           if [ "''${REVIEW_SANDBOX:-}" != 1 ] || [ "$PWD" != /workspace ]; then
             echo 'Run review commands inside a disposable review sandbox.' >&2
@@ -56,7 +92,11 @@
           export TMPDIR=/workspace/.review/tmp
           export PRE_COMMIT_HOME=/workspace/.review/pre-commit
           export TF_CLI_CONFIG_FILE=/workspace/.review/terraform.rc
+          for name in "''${!AWS_@}" "''${!TF_CLI_ARGS@}"; do
+            if [ -n "$name" ]; then unset "$name"; fi
+          done
           export TF_IN_AUTOMATION=1 TF_INPUT=0 CHECKPOINT_DISABLE=1 AWS_EC2_METADATA_DISABLED=true AWS_REGION=eu-west-2
+          export AWS_CONFIG_FILE=/dev/null AWS_SHARED_CREDENTIALS_FILE=/dev/null
           unset TF_PLUGIN_CACHE_DIR
           files="$(git ls-files '*.tf')"
           if [ -z "$files" ]; then
@@ -160,6 +200,7 @@
           nativeBuildInputs = [
             pkgs.gitMinimal
             preCommitCheck.config.package
+            reviewTestMode
             (pkgs.writeShellApplication {
               name = "review-bootstrap";
               text = reviewEnvironment + ''
@@ -179,7 +220,10 @@
                 pre-commit run --all-files --config ${preCommitCheck.config.configFile}
                 for root in "''${roots[@]}"; do
                   terraform -chdir="$root" validate -no-color
-                  if [ -d "$root/tests" ]; then terraform -chdir="$root" test -no-color; fi
+                  if [ -d "$root/tests" ]; then
+                    review-check-test-mode "$root"
+                    terraform -chdir="$root" test -no-color
+                  fi
                 done
               '';
             })
