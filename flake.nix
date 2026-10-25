@@ -58,6 +58,12 @@
           export TF_CLI_CONFIG_FILE=/workspace/.review/terraform.rc
           export TF_IN_AUTOMATION=1 TF_INPUT=0 CHECKPOINT_DISABLE=1 AWS_EC2_METADATA_DISABLED=true AWS_REGION=eu-west-2
           unset TF_PLUGIN_CACHE_DIR
+          files="$(git ls-files '*.tf')"
+          if [ -z "$files" ]; then
+            echo 'No tracked Terraform modules found.' >&2
+            exit 1
+          fi
+          mapfile -t roots < <(printf '%s\n' "$files" | while IFS= read -r file; do dirname "$file"; done | sort -u)
           mkdir -p "$TMPDIR"
         '';
 
@@ -152,13 +158,13 @@
         devShells.review = self.devShells.${system}.default.overrideAttrs (old: {
           shellHook = "";
           nativeBuildInputs = [
+            pkgs.gitMinimal
             preCommitCheck.config.package
             (pkgs.writeShellApplication {
               name = "review-bootstrap";
               text = reviewEnvironment + ''
                 test -d /deps/terraform-inputs/providers
                 printf 'disable_checkpoint = true\nprovider_installation {\n filesystem_mirror {\n path = "/deps/terraform-inputs/providers"\n include = ["registry.terraform.io/*/*"]\n }\n}\n' > "$TF_CLI_CONFIG_FILE"
-                mapfile -t roots < <(git ls-files '*.tf' | while IFS= read -r file; do dirname "$file"; done | sort -u)
                 for root in "''${roots[@]}"; do
                   mkdir -p "$root/.terraform/modules"
                   if [ -f "/deps/terraform-inputs/roots/$root/modules.json" ]; then cp "/deps/terraform-inputs/roots/$root/modules.json" "$root/.terraform/modules/modules.json"; fi
@@ -171,7 +177,6 @@
               name = "review-check";
               text = reviewEnvironment + ''
                 pre-commit run --all-files --config ${preCommitCheck.config.configFile}
-                mapfile -t roots < <(git ls-files '*.tf' | while IFS= read -r file; do dirname "$file"; done | sort -u)
                 for root in "''${roots[@]}"; do
                   terraform -chdir="$root" validate -no-color
                   if [ -d "$root/tests" ]; then terraform -chdir="$root" test -no-color; fi
