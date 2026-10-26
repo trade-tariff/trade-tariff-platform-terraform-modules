@@ -48,6 +48,133 @@
 
         update-providers = pkgs.writeShellScriptBin "update-providers" "clean && init";
 
+        reviewTools = import (builtins.fetchTree {
+          type = "github";
+          owner = "NixOS";
+          repo = "nixpkgs";
+          rev = "4a29d733e8a7d5b824c3d8c958a946a9867b3eb2";
+          narHash = "sha256-f+JACbTqzZ+G92DSnXOUGRhGANb8Blh7CoeYOeBF8/U=";
+        }) { inherit system; };
+
+        reviewSecretTools = import (builtins.fetchTree {
+          type = "github";
+          owner = "NixOS";
+          repo = "nixpkgs";
+          rev = "e75f25705c2934955ee5075e62530d74aca973c6";
+          narHash = "sha256-HposVFZcsBCevgqLR73w/BpSe8J1lMgw5kASnnxO3A4=";
+        }) { inherit system; };
+
+        reviewTerraformHooks = builtins.fetchTree {
+          type = "github";
+          owner = "antonbabenko";
+          repo = "pre-commit-terraform";
+          rev = "d0e12caebb2ab0ee8bf98181c8bfe9702bca103d"; # v1.105.0
+          narHash = "sha256-JQmD7QoYegr9zvwBbauNo+kOa/u4VEr9m2Uxgb5QI/8=";
+        };
+
+        reviewPreCommitConfig = pkgs.writeText "review-pre-commit.json" (
+          builtins.toJSON {
+            repos = [
+              {
+                repo = "local";
+                hooks = [
+                  {
+                    id = "terraform_fmt";
+                    name = "Terraform fmt";
+                    language = "system";
+                    entry = "${reviewTerraformHooks}/hooks/terraform_fmt.sh";
+                    files = "\\.(tf|tofu|tfvars|(tftest|tofutest|tfmock|tfquery)\\.hcl)$";
+                    exclude = "\\.terraform/.*$";
+                  }
+                  {
+                    id = "terraform_docs";
+                    name = "Terraform docs";
+                    language = "system";
+                    entry = "${reviewTerraformHooks}/hooks/terraform_docs.sh";
+                    args = [
+                      "--hook-config=--path-to-file=README.md"
+                      "--hook-config=--add-to-existing-file=true"
+                      "--hook-config=--create-file-if-not-exist=true"
+                    ];
+                    files = "\\.(tf|tofu|terraform\\.lock\\.hcl)$";
+                    exclude = "\\.terraform/.*$";
+                    require_serial = true;
+                  }
+                  {
+                    id = "terraform_providers_lock";
+                    name = "Lock terraform provider versions";
+                    language = "system";
+                    entry = "${reviewTerraformHooks}/hooks/terraform_providers_lock.sh";
+                    files = "(\\.terraform\\.lock\\.hcl)$";
+                    exclude = "\\.terraform/.*$";
+                    require_serial = true;
+                  }
+                  {
+                    id = "check-merge-conflict";
+                    name = "check for merge conflicts";
+                    language = "system";
+                    entry = "${reviewTools.python3Packages.pre-commit-hooks}/bin/check-merge-conflict";
+                    types = [ "text" ];
+                  }
+                  {
+                    id = "check-yaml";
+                    name = "check yaml";
+                    language = "system";
+                    entry = "${reviewTools.python3Packages.pre-commit-hooks}/bin/check-yaml";
+                    types = [ "yaml" ];
+                  }
+                  {
+                    id = "end-of-file-fixer";
+                    name = "fix end of files";
+                    language = "system";
+                    entry = "${reviewTools.python3Packages.pre-commit-hooks}/bin/end-of-file-fixer";
+                    types = [ "text" ];
+                    stages = [
+                      "pre-commit"
+                      "pre-push"
+                      "manual"
+                    ];
+                  }
+                  {
+                    id = "mixed-line-ending";
+                    name = "mixed line ending";
+                    language = "system";
+                    entry = "${reviewTools.python3Packages.pre-commit-hooks}/bin/mixed-line-ending";
+                    types = [ "text" ];
+                  }
+                  {
+                    id = "trailing-whitespace";
+                    name = "trim trailing whitespace";
+                    language = "system";
+                    entry = "${reviewTools.python3Packages.pre-commit-hooks}/bin/trailing-whitespace-fixer";
+                    types = [ "text" ];
+                    stages = [
+                      "pre-commit"
+                      "pre-push"
+                      "manual"
+                    ];
+                  }
+                  {
+                    id = "trufflehog";
+                    name = "TruffleHog";
+                    language = "system";
+                    entry = "${reviewSecretTools.trufflehog}/bin/trufflehog git file://. --since-commit HEAD --results=verified --fail --trust-local-git-config";
+                    pass_filenames = false;
+                  }
+                  {
+                    id = "actionlint-docker";
+                    name = "Lint GitHub Actions workflow files";
+                    language = "system";
+                    entry = "${reviewTools.actionlint}/bin/actionlint";
+                    types = [ "yaml" ];
+                    files = "^\\.github/workflows/";
+                  }
+                ];
+              }
+            ];
+          }
+        );
+
         reviewTestMode = pkgs.writeShellApplication {
           name = "review-check-test-mode";
           runtimeInputs = [ (pkgs.python3.withPackages (ps: [ ps.python-hcl2 ])) ];
@@ -200,6 +327,14 @@
           nativeBuildInputs = [
             pkgs.gitMinimal
             preCommitCheck.config.package
+            reviewTools.bash
+            reviewTools.coreutils
+            reviewTools.findutils
+            reviewTools.gawk
+            reviewTools.gnugrep
+            reviewTools.gnused
+            reviewTools.util-linux
+            reviewTools.terraform-docs
             reviewTestMode
             (pkgs.writeShellApplication {
               name = "review-bootstrap";
@@ -217,7 +352,8 @@
             (pkgs.writeShellApplication {
               name = "review-check";
               text = reviewEnvironment + ''
-                pre-commit run --all-files --config ${preCommitCheck.config.configFile}
+                status=0
+                pre-commit run --all-files --config ${reviewPreCommitConfig} || status=$?
                 for root in "''${roots[@]}"; do
                   terraform -chdir="$root" validate -no-color
                   if [ -d "$root/tests" ]; then
@@ -225,6 +361,7 @@
                     terraform -chdir="$root" test -no-color
                   fi
                 done
+                exit "$status"
               '';
             })
           ]
