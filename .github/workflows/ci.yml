@@ -31,3 +31,5 @@ jobs:
             (cd "$d" && terraform test -no-color) || exit 1
           fi
         done
+    - name: ecs-service task role regression check
+      run: aws/ecs-service/tests/check_task_role_attachments.sh
