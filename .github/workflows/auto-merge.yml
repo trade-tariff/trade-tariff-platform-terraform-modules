@@ -37,5 +37,5 @@ jobs:
       merge-method: rebase
       required-workflow: ci.yml
     secrets:
-      pr-bot-app-id: ${{ secrets.TRADE_TARIFF_PR_BOT_GITHUB_APP_ID }}
+      pr-bot-app-id: ${{ vars.TRADE_TARIFF_PR_BOT_GITHUB_CLIENT_ID }}
       pr-bot-app-private-key: ${{ secrets.TRADE_TARIFF_PR_BOT_GITHUB_APP_PRIVATE_KEY }}
