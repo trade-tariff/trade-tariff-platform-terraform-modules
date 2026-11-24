@@ -25,6 +25,17 @@ variable "memory" {
   default     = 512
 }
 
+variable "cpu_architecture" {
+  description = "CPU architecture of the Fargate task. Set ARM64 only when the image has an arm64 build."
+  type        = string
+  default     = "X86_64"
+
+  validation {
+    condition     = contains(["X86_64", "ARM64"], var.cpu_architecture)
+    error_message = "cpu_architecture must be X86_64 or ARM64."
+  }
+}
+
 variable "skip_destroy" {
   description = "(Optional) Whether to retain the old revision when the resource is destroyed or replacement is necessary. Default is false."
   type        = bool
